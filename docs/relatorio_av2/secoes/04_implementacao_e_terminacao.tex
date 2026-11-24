@@ -1,0 +1,33 @@
+\chapter{Implementação, Determinismo e Prova de Terminação}
+
+\section{Arquitetura e Fonte Única de Verdade}
+
+A aplicação foi implementada em \textbf{Python 3} (utilizando exclusivamente a biblioteca padrão para o motor formal, a CLI e a Interface Web Interativa, e \texttt{pytest} para a suíte automatizada), mantendo preservados todos os módulos e os 135 testes do \texttt{MiniLexer} da AV1.
+
+O módulo \texttt{src/av2/spec.py} concentra, em estruturas imutáveis (\texttt{@dataclass(frozen=True, slots=True)}), as especificações canônicas da GLC, do AP e do ALL. A partir dele operam:
+\begin{itemize}
+    \item \texttt{src/av2/glc.py}: motor de derivação mais à esquerda LL(1);
+    \item \texttt{src/av2/ap.py}: simulador formal de DPDA com pilha real (\texttt{list[str]}), validação de alfabeto $\Sigma_{\text{AP}}$ e rastreamento \texttt{(passo, estado, posição, pilha, restante, transição)};
+    \item \texttt{src/av2/all\_lba.py}: simulador formal de D-LBA com fita fixa \texttt{['<', *entrada, '>']}, asserções de fronteira a cada passo e rastreamento \texttt{(passo, estado, cabeçote, símbolo\_lido, fita, transição)};
+    \item \texttt{src/av2/pipeline.py}: orquestração das duas etapas (o ALL só é invocado se o AP aceitar) e leitura didática em \texttt{MiniLang};
+    \item \texttt{src/av2/minilang\_source.py}: ponte transparente que usa o \texttt{MiniLexer} real da AV1 para projetar código-fonte \texttt{MiniLang} em cadeias sobre $\Sigma_{\text{AP}}$ (sem realizar checagem sintática ou semântica fora dos autômatos), além de mapear \texttt{(linha, coluna)} para destaque de erros estilo IDE e sintetizar código \texttt{MiniLang} para os 50 casos oficiais;
+    \item \texttt{src/av2/cli.py} e \texttt{src/av2/web.py}: interfaces CLI e Web Interativa estilo terminal (\texttt{./run}, \texttt{./ap}, \texttt{./all}, \texttt{./glc}, \texttt{./suite}, \texttt{./specs}, \texttt{./man}) com grafos SVG ao vivo, modo \textit{fullscreen}, pilha vertical, fita limitada e derivação;
+    \item \texttt{src/av2/jflap\_io.py}: gerador e validador estrutural de \texttt{glc.jff}, \texttt{ap.jff} e \texttt{all.jff} compatíveis com o JFLAP 7.1~\cite{jflap}.
+\end{itemize}
+
+Em ambos os autômatos, a decisão resulta \textbf{estritamente} da consulta às tabelas de transição $\delta_{\text{AP}}$ e $\delta_{\text{ALL}}$ e das operações reais de pilha e fita — sem uso de expressões regulares, contadores externos ou comparações diretas de strings.
+
+\section{Determinismo e Ausência de Ramificação}
+
+Tanto o AP quanto o ALL foram projetados como máquinas \textbf{100\% determinísticas} (DPDA e D-LBA):
+\begin{itemize}
+    \item No \textbf{AP}, não existe par $(q, a, X)$ com mais de uma transição, e em $q_2$ nenhuma transição de leitura de símbolo atua sobre o topo $Z$; logo, a única $\varepsilon$-transição $(q_2, \varepsilon, Z) \to (q_3, Z)$ jamais conflita com transições de leitura. O detector nativo \texttt{PDANondeterminismDetector} do JFLAP 7.1 confirmou \textbf{0 estados não-determinísticos} em \texttt{ap.jff}.
+    \item No \textbf{ALL}, cada par $(q, X)$ mapeia para no máximo uma tripla $(q', Y, D)$. Assim, não há necessidade de busca em largura ou retrocesso (\textit{backtracking}): existe exatamente um caminho computacional por entrada, e a rejeição ocorre imediatamente quando o par atual não possui transição definida.
+\end{itemize}
+
+\section{Prova de Terminação}
+
+\begin{itemize}
+    \item \textbf{Terminação do AP ($O(n)$):} toda transição de $\delta_{\text{AP}}$ avança a posição de leitura em $+1$, exceto $(q_2, \varepsilon, Z) \to (q_3, Z)$. Como não existe caminho no grafo de estados que retorne de $\{q_3, \dots, q_8\}$ para $q_2$, essa $\varepsilon$-transição dispara no máximo uma vez por execução. Logo, para qualquer entrada de comprimento $n$, o AP sempre para em no máximo $n + 1$ passos.
+    \item \textbf{Terminação do ALL ($O(n^2)$):} cada iteração do ciclo principal ($q_1/q_8 \to q_2/q_3 \to q_4/q_5 \to q_6 \to q_7 \to q_8$) converte irreversivelmente um símbolo não marcado de $\{\texttt{i}, \texttt{s}\}$ da metade esquerda e um da metade direita em $\{\texttt{I}, \texttt{S}\}$, nunca desmarcando células. Entre marcações, cada varredura move o cabeçote em direção estritamente monotônica ($R$ em $q_2, q_3, q_4, q_5, q_9$; $L$ em $q_6, q_7$) sobre no máximo $n + 1$ células. Portanto, há no máximo $\lfloor n/2 \rfloor$ iterações, cada uma com no máximo $2(n+1)$ passos, somadas a $q_0$ e $q_9$, garantindo parada incondicional em no máximo $(n+2)^2$ passos.
+\end{itemize}

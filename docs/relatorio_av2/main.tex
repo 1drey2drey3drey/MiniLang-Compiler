@@ -1,0 +1,93 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\geometry{left=3cm, right=2cm, top=3cm, bottom=2cm}
+\onehalfspacing
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue!60!black,
+    citecolor=blue!60!black,
+    pdftitle={MiniLang-Compiler (AV2) --- Reconhecimento com Pilha e Fita Limitada},
+    pdfauthor={Andrey Lourival Andrade Garcia; Igor Cecim Vilhena}
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    {\large CENTRO UNIVERSITÁRIO DO ESTADO DO PARÁ --- CESUPA \par}
+    {\normalsize Curso de Ciência da Computação --- Turma CC6NA \par}
+    \vspace{2.5cm}
+    {\LARGE \textbf{MiniLang-Compiler (AV2)} \par}
+    \vspace{0.4cm}
+    {\large \textbf{Reconhecimento de Linguagens em Duas Etapas com Autômato de Pilha (GLC) e Autômato Linearmente Limitado (LSC)} \par}
+    \vspace{2.5cm}
+    {\normalsize \textbf{Integrantes:} \par}
+    {\normalsize Andrey Lourival Andrade Garcia \par}
+    {\normalsize Igor Cecim Vilhena \par}
+    \vspace{1.2cm}
+    {\normalsize \textbf{Disciplina:} Linguagens Formais e Autômatos \par}
+    {\normalsize \textbf{Docente:} Prof. Daniel Leal Souza \par}
+    \vfill
+    {\normalsize Belém --- PA \\ 25 de novembro de 2026 \par}
+\end{titlepage}
+
+\pagenumbering{roman}
+\chapter*{Resumo}
+\addcontentsline{toc}{chapter}{Resumo}
+
+Este relatório técnico apresenta a modelagem formal, a implementação e a validação experimental do projeto \textbf{MiniLang-Compiler (AV2)}, evolução direta do analisador léxico \texttt{MiniLang-MiniLexer} desenvolvido na AV1. A aplicação valida cadeias formais de programas compactos da linguagem \texttt{MiniLang} em duas etapas sequenciais: (1) um \textbf{Autômato de Pilha Determinístico (AP)} com \textbf{9 estados} reconhece a estrutura sintática de escopos aninhados e seção de assinatura/chamada gerada por uma \textbf{Gramática Livre de Contexto (GLC)} LL(1) não-regular; e (2) caso o AP aceite, um \textbf{Autômato Linearmente Limitado Determinístico (ALL)} com \textbf{11 estados} opera sobre uma fita estritamente limitada de $n$ células graváveis e dois marcadores de borda fixos (\texttt{<} e \texttt{>}) para verificar a compatibilidade posicional de aridade e tipos entre a assinatura declarada e a chamada de função ($L_2 = \{w\texttt{:}w \mid w \in \{\texttt{i}, \texttt{s}\}^+\}$), uma dependência sensível ao contexto não reconhecível por GLCs. A solução inclui motor formal em Python, CLI, Interface Web Interativa com rastreamento animado da pilha e da fita, artefatos \texttt{.jff} para o JFLAP 7.1, 227 testes automatizados no \texttt{pytest} (135 preservados da AV1 + 92 da AV2) e validação direta no motor oficial do \texttt{JFLAP7.1.jar} com \textbf{0 divergências} em 418 casos.
+
+\medskip
+\noindent\textbf{Palavras-chave:} Linguagens Livres de Contexto; Gramática Livre de Contexto; Autômato de Pilha; Linguagens Sensíveis ao Contexto; Autômato Linearmente Limitado; MiniLang.
+
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\input{secoes/01_problema_e_fundamentacao}
+\input{secoes/02_glc_e_ap}
+\input{secoes/03_lsc_e_all}
+\input{secoes/04_implementacao_e_terminacao}
+\input{secoes/05_testes_e_resultados}
+\input{secoes/06_limitacoes_contribuicoes_ia}
+
+\renewcommand{\bibname}{Referências}
+\begin{thebibliography}{9}
+\addcontentsline{toc}{chapter}{Referências}
+
+\bibitem{sipser}
+SIPSER, Michael. \textit{Introduction to the Theory of Computation}. 3. ed. Boston: Cengage Learning, 2013.
+
+\bibitem{hopcroft}
+HOPCROFT, John E.; MOTWANI, Rajeev; ULLMAN, Jeffrey D. \textit{Introduction to Automata Theory, Languages, and Computation}. 3. ed. Boston: Pearson/Addison-Wesley, 2007.
+
+\bibitem{aho}
+AHO, Alfred V.; LAM, Monica S.; SETHI, Ravi; ULLMAN, Jeffrey D. \textit{Compilers: Principles, Techniques, and Tools}. 2. ed. Boston: Pearson/Addison-Wesley, 2006.
+
+\bibitem{jflap}
+RODGER, Susan H.; FINLEY, Thomas W. \textit{JFLAP: An Interactive Formal Languages and Automata Package}. Sudbury: Jones and Bartlett Publishers, 2006. Disponível em: \url{https://www.jflap.org/}.
+
+\bibitem{atividade}
+SOUZA, Daniel Leal. \textit{Atividade Prática AV2: Linguagens Livres de Contexto e Sensíveis ao Contexto}. Material da disciplina de Linguagens Formais e Autômatos, CESUPA, 2026.
+
+\bibitem{av1}
+GARCIA, Andrey Lourival Andrade; VILHENA, Igor Cecim. \textit{MiniLang-MiniLexer: Analisador Léxico da MiniLang (AV1)}. Repositório GitHub, 2026. Disponível em: \url{https://github.com/1drey2drey3drey/MiniLang-MiniLexer}.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,9 @@
+// Cenários oficiais da AV2 (MiniLang-Compiler) — um por linha
+// Cenário 1: Aceito pelo AP e aceito pelo ALL (30 chars; fatia semântica de 19 chars)
+p{(()){}}#isisiisis:isisiisis;
+// Cenário 2: Rejeitado pelo AP por '{' não fechado — ALL não executa (29 chars)
+p{(()){}#isisiisis:isisiisis;
+// Cenário 3: Aceito pelo AP, mas rejeitado pelo ALL por troca posicional no final (30 chars)
+p{(()){}}#isisiisis:isisiissi;
+// Teste de erro léxico: símbolo '@' fora do alfabeto Σ_AP
+p{(()){}}#isisi@isisi;

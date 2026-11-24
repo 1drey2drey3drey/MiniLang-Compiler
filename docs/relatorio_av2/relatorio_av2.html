@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório Técnico — MiniLang-Compiler (AV2 de LFA)</title>
+  <style>
+    @page { size: A4; margin: 22mm 18mm 20mm 25mm; }
+    body { font-family: Georgia, "Times New Roman", serif; color: #111827; line-height: 1.55; max-width: 900px; margin: 0 auto; padding: 24px; }
+    .no-print { background: #eff6ff; border: 1px solid #93c5fd; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; font-family: system-ui, sans-serif; font-size: 14px; }
+    .no-print button { background: #2563eb; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .cover { text-align: center; padding: 64px 20px 48px; border-bottom: 2px solid #1e3a8a; page-break-after: always; }
+    .cover h1 { font-size: 28px; color: #1e3a8a; margin: 28px 0 8px; }
+    .cover h2 { font-size: 18px; font-weight: normal; color: #374151; }
+    h1, h2, h3 { font-family: system-ui, -apple-system, sans-serif; color: #1e3a8a; }
+    h2 { border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-top: 28px; page-break-after: avoid; }
+    code { font-family: "Cascadia Code", Consolas, monospace; font-size: 0.9em; background: #f1f5f9; padding: 1px 4px; border-radius: 3px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 12.5px; }
+    th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; vertical-align: top; }
+    th { background: #f1f5f9; font-family: system-ui, sans-serif; }
+    .ok { color: #15803d; font-weight: 700; }
+    .err { color: #b91c1c; font-weight: 700; }
+    .proof { background: #f8fafc; border-left: 4px solid #2563eb; padding: 10px 14px; margin: 12px 0; }
+    @media print { .no-print { display: none; } body { padding: 0; max-width: none; } }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <span>Versão pronta para exportação direta em PDF (ou compile <code>docs/relatorio_av2/main.tex</code> no Overleaf).</span>
+    <button type="button" onclick="window.print()">Salvar / Imprimir PDF</button>
+  </div>
+
+  <section class="cover">
+    <p><strong>CENTRO UNIVERSITÁRIO DO ESTADO DO PARÁ — CESUPA</strong><br>Curso de Ciência da Computação — Turma CC6NA</p>
+    <h1>MiniLang-Compiler (AV2)</h1>
+    <h2>Reconhecimento de Linguagens em Duas Etapas com Autômato de Pilha (GLC) e Autômato Linearmente Limitado (LSC)</h2>
+    <p style="margin-top:48px;"><strong>Integrantes:</strong><br>Andrey Lourival Andrade Garcia<br>Igor Cecim Vilhena</p>
+    <p style="margin-top:24px;"><strong>Disciplina:</strong> Linguagens Formais e Autômatos<br><strong>Docente:</strong> Prof. Daniel Leal Souza</p>
+    <p style="margin-top:64px;">Belém — PA • 25 de novembro de 2026</p>
+  </section>
+
+  <h2>1. Problema, Originalidade e Fundamentação na Hierarquia de Chomsky</h2>
+  <p>O <strong>MiniLang-Compiler (AV2)</strong> evolui o analisador léxico <code>MiniLang-MiniLexer</code> (AV1, Tipo 3 / Regular) para um validador em duas etapas sobre a linguagem educacional <code>MiniLang</code>:</p>
+  <ol>
+    <li><strong>Etapa 1 — MiniParser (Tipo 2 / LLC não-regular):</strong> Autômato de Pilha Determinístico (<strong>9 estados</strong>) que reconhece a GLC <code>G</code> para programas com cabeçalho <code>p</code>, escopos <code>&#123;...&#125;</code> e expressões <code>(...)</code> balanceados, seguidos de <code>#assinatura:chamada;</code> sobre tipos <code>i</code> (<code>int</code>) e <code>s</code> (<code>string</code>).</li>
+    <li><strong>Etapa 2 — MiniSemantic (Tipo 1 / LSC não-LLC):</strong> Autômato Linearmente Limitado Determinístico (<strong>11 estados</strong>) executado somente se o AP aceitar, validando sobre fita estritamente limitada <code>&lt;w:u&gt;</code> a igualdade posicional de aridade e tipos <code>L₂ = &#123; w:w | w ∈ &#123;i, s&#125;⁺ &#125;</code>.</li>
+  </ol>
+
+  <div class="proof">
+    <strong>Prova de Não-Regularidade de L₁ (Lema do Bombeamento Regular — Sipser, 2013; Hopcroft et al., 2007):</strong>
+    Suponha L₁ regular com constante <em>p ≥ 3</em> e considere <code>z = p&#123;(ᵖ)ᵖ&#125;#i:i; ∈ L₁</code>. Para qualquer decomposição <code>z = xyz</code> com <code>|xy| ≤ p</code> e <code>|y| ≥ 1</code>, <code>y</code> está no prefixo <code>p&#123;(ᵖ⁻²</code>. Bombear <code>xy²z</code> duplica <code>p</code>, cria <code>&#123;</code> sem fechamento ou gera mais <code>(</code> do que <code>)</code>. Contradição ⇒ <strong>L₁ ∉ LR</strong>.
+  </div>
+
+  <div class="proof">
+    <strong>Prova de Não-Livre de Contexto de L₂ (Lema do Bombeamento LLC — Sipser, 2013; Aho et al., 2006):</strong>
+    Suponha L₂ livre de contexto com constante <em>p ≥ 1</em> e tome <code>z = iᵖsᵖ:iᵖsᵖ ∈ L₂</code>, <code>z = uvwxy</code>, <code>|vwx| ≤ p</code>, <code>|vx| ≥ 1</code>. Se <code>vwx</code> fica de um lado de <code>:</code>, <code>uv²wx²y</code> quebra o tamanho igual; se cruza <code>:</code>, só atinge <code>sᵖ</code> à esquerda e <code>iᵖ</code> à direita (remover <code>:</code> em <code>i=0</code> ou bombear <code>s</code> à esquerda / <code>i</code> à direita destrói <code>w = u</code>). Contradição ⇒ <strong>L₂ ∈ LSC \ LLC</strong>.
+  </div>
+
+  <h2>2. Etapa 1 — GLC (G), Derivação e Autômato de Pilha (9 estados)</h2>
+  <p><strong>GLC LL(1):</strong> <code>V = &#123;S, B, T, R&#125;</code>, <code>T = Σ_AP = &#123;p, &#123;, &#125;, (, ), #, i, s, :, ;&#125;</code>, inicial <code>S</code>:</p>
+  <ul><li><code>P1: S → p{B}#T:T;</code></li>
+<li><code>P2: B → {B}B</code></li>
+<li><code>P3: B → (B)B</code></li>
+<li><code>P4: B → ε</code></li>
+<li><code>P5: T → iR</code></li>
+<li><code>P6: T → sR</code></li>
+<li><code>P7: R → iR</code></li>
+<li><code>P8: R → sR</code></li>
+<li><code>P9: R → ε</code></li></ul>
+
+  <h3>2.1 Derivação Mais à Esquerda de <code>p&#123;(())&#123;&#125;&#125;#isisi:isisi;</code> (22 caracteres)</h3>
+  <table>
+    <thead><tr><th>Passo</th><th>Forma Sentencial</th><th>Produção Aplicada</th></tr></thead>
+    <tbody><tr><td>0</td><td><code>S</code></td><td><code>Símbolo inicial</code></td></tr>
+<tr><td>1</td><td><code>p{B}#T:T;</code></td><td><code>P1: S → p{B}#T:T;</code></td></tr>
+<tr><td>2</td><td><code>p{(B)B}#T:T;</code></td><td><code>P3: B → (B)B</code></td></tr>
+<tr><td>3</td><td><code>p{((B)B)B}#T:T;</code></td><td><code>P3: B → (B)B</code></td></tr>
+<tr><td>4</td><td><code>p{(()B)B}#T:T;</code></td><td><code>P4: B → ε</code></td></tr>
+<tr><td>5</td><td><code>p{(())B}#T:T;</code></td><td><code>P4: B → ε</code></td></tr>
+<tr><td>6</td><td><code>p{(()){B}B}#T:T;</code></td><td><code>P2: B → {B}B</code></td></tr>
+<tr><td>7</td><td><code>p{(()){}B}#T:T;</code></td><td><code>P4: B → ε</code></td></tr>
+<tr><td>8</td><td><code>p{(()){}}#T:T;</code></td><td><code>P4: B → ε</code></td></tr>
+<tr><td>9</td><td><code>p{(()){}}#iR:T;</code></td><td><code>P5: T → iR</code></td></tr>
+<tr><td>10</td><td><code>p{(()){}}#isR:T;</code></td><td><code>P8: R → sR</code></td></tr>
+<tr><td>11</td><td><code>p{(()){}}#isiR:T;</code></td><td><code>P7: R → iR</code></td></tr>
+<tr><td>12</td><td><code>p{(()){}}#isisR:T;</code></td><td><code>P8: R → sR</code></td></tr>
+<tr><td>13</td><td><code>p{(()){}}#isisiR:T;</code></td><td><code>P7: R → iR</code></td></tr>
+<tr><td>14</td><td><code>p{(()){}}#isisi:T;</code></td><td><code>P9: R → ε</code></td></tr>
+<tr><td>15</td><td><code>p{(()){}}#isisi:iR;</code></td><td><code>P5: T → iR</code></td></tr>
+<tr><td>16</td><td><code>p{(()){}}#isisi:isR;</code></td><td><code>P8: R → sR</code></td></tr>
+<tr><td>17</td><td><code>p{(()){}}#isisi:isiR;</code></td><td><code>P7: R → iR</code></td></tr>
+<tr><td>18</td><td><code>p{(()){}}#isisi:isisR;</code></td><td><code>P8: R → sR</code></td></tr>
+<tr><td>19</td><td><code>p{(()){}}#isisi:isisiR;</code></td><td><code>P7: R → iR</code></td></tr>
+<tr><td>20</td><td><code>p{(()){}}#isisi:isisi;</code></td><td><code>P9: R → ε</code></td></tr></tbody>
+  </table>
+
+  <h3>2.2 Especificação do AP (DPDA — 9 estados) e Equivalência com a GLC</h3>
+  <p><code>M_AP = (Q_AP, Σ_AP, Γ_AP, δ_AP, q0, Z, F_AP)</code>, com <code>Q_AP = &#123;q0..q8&#125;</code>, <code>Γ_AP = &#123;Z, &#123;, (&#125;</code> e aceitação por <strong>estado final</strong> (<code>F = &#123;q8&#125;</code>) com <strong>consumo integral da entrada</strong>. Em <code>q2</code>, a pilha acima de <code>Z</code> registra exatamente os delimitadores abertos de <code>B</code>; quando o escopo externo fecha, <code>(q2, ε, Z) → (q3, Z)</code> dispara deterministicamente e <code>q3..q8</code> reconhecem <code>#T:T;</code>, garantindo <code>L(M_AP) = L(G)</code>. Terminação garantida em no máximo <code>n + 1</code> passos (<code>O(n)</code>).</p>
+  <table>
+    <thead><tr><th>Origem</th><th>Lê</th><th>Desempilha</th><th>Destino</th><th>Empilha</th></tr></thead>
+    <tbody><tr><td><code>q0</code></td><td><code>p</code></td><td><code>Z</code></td><td><code>q1</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q1</code></td><td><code>{</code></td><td><code>Z</code></td><td><code>q2</code></td><td><code>{Z</code></td></tr>
+<tr><td><code>q2</code></td><td><code>{</code></td><td><code>{</code></td><td><code>q2</code></td><td><code>{{</code></td></tr>
+<tr><td><code>q2</code></td><td><code>{</code></td><td><code>(</code></td><td><code>q2</code></td><td><code>{(</code></td></tr>
+<tr><td><code>q2</code></td><td><code>(</code></td><td><code>{</code></td><td><code>q2</code></td><td><code>({</code></td></tr>
+<tr><td><code>q2</code></td><td><code>(</code></td><td><code>(</code></td><td><code>q2</code></td><td><code>((</code></td></tr>
+<tr><td><code>q2</code></td><td><code>}</code></td><td><code>{</code></td><td><code>q2</code></td><td><code>ε</code></td></tr>
+<tr><td><code>q2</code></td><td><code>)</code></td><td><code>(</code></td><td><code>q2</code></td><td><code>ε</code></td></tr>
+<tr><td><code>q2</code></td><td><code>ε</code></td><td><code>Z</code></td><td><code>q3</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q3</code></td><td><code>#</code></td><td><code>Z</code></td><td><code>q4</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q4</code></td><td><code>i</code></td><td><code>Z</code></td><td><code>q5</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q4</code></td><td><code>s</code></td><td><code>Z</code></td><td><code>q5</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q5</code></td><td><code>i</code></td><td><code>Z</code></td><td><code>q5</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q5</code></td><td><code>s</code></td><td><code>Z</code></td><td><code>q5</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q5</code></td><td><code>:</code></td><td><code>Z</code></td><td><code>q6</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q6</code></td><td><code>i</code></td><td><code>Z</code></td><td><code>q7</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q6</code></td><td><code>s</code></td><td><code>Z</code></td><td><code>q7</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q7</code></td><td><code>i</code></td><td><code>Z</code></td><td><code>q7</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q7</code></td><td><code>s</code></td><td><code>Z</code></td><td><code>q7</code></td><td><code>Z</code></td></tr>
+<tr><td><code>q7</code></td><td><code>;</code></td><td><code>Z</code></td><td><code>q8</code></td><td><code>Z</code></td></tr></tbody>
+  </table>
+
+  <h2>3. Etapa 2 — LSC e Autômato Linearmente Limitado (11 estados)</h2>
+  <p><code>M_ALL = (Q_ALL, Σ_ALL, Γ_ALL, &lt;, &gt;, δ_ALL, q0, F_ALL)</code>, com <code>Q_ALL = &#123;q0..q10&#125;</code>, <code>Σ_ALL = &#123;i, s, :&#125;</code>, <code>Γ_ALL = &#123;&lt;, &gt;, i, s, :, I, S&#125;</code> e <code>F_ALL = &#123;q10&#125;</code>. Para entrada de <code>n</code> símbolos, usa exatamente <code>n</code> células graváveis (<code>1..n</code>) + 2 marcadores fixos (<code>&lt;</code> na célula <code>0</code> e <code>&gt;</code> na célula <code>n+1</code>). Apenas <code>(q0, &lt;)</code> move <code>R</code> e apenas <code>(q9, &gt;)</code> move <code>L</code>; nenhuma borda é sobrescrita ou ultrapassada. Cada ciclo marca irreversivelmente 1 símbolo de cada lado (<code>i→I</code>, <code>s→S</code>), garantindo terminação determinística em <code>O(n²)</code>.</p>
+  <table>
+    <thead><tr><th>Origem</th><th>Lê</th><th>Destino</th><th>Escreve</th><th>Movimento</th></tr></thead>
+    <tbody><tr><td><code>q0</code></td><td><code>&lt;</code></td><td><code>q1</code></td><td><code>&lt;</code></td><td><code>R</code></td></tr>
+<tr><td><code>q1</code></td><td><code>i</code></td><td><code>q2</code></td><td><code>I</code></td><td><code>R</code></td></tr>
+<tr><td><code>q1</code></td><td><code>s</code></td><td><code>q3</code></td><td><code>S</code></td><td><code>R</code></td></tr>
+<tr><td><code>q2</code></td><td><code>i</code></td><td><code>q2</code></td><td><code>i</code></td><td><code>R</code></td></tr>
+<tr><td><code>q2</code></td><td><code>s</code></td><td><code>q2</code></td><td><code>s</code></td><td><code>R</code></td></tr>
+<tr><td><code>q2</code></td><td><code>:</code></td><td><code>q4</code></td><td><code>:</code></td><td><code>R</code></td></tr>
+<tr><td><code>q3</code></td><td><code>i</code></td><td><code>q3</code></td><td><code>i</code></td><td><code>R</code></td></tr>
+<tr><td><code>q3</code></td><td><code>s</code></td><td><code>q3</code></td><td><code>s</code></td><td><code>R</code></td></tr>
+<tr><td><code>q3</code></td><td><code>:</code></td><td><code>q5</code></td><td><code>:</code></td><td><code>R</code></td></tr>
+<tr><td><code>q4</code></td><td><code>I</code></td><td><code>q4</code></td><td><code>I</code></td><td><code>R</code></td></tr>
+<tr><td><code>q4</code></td><td><code>S</code></td><td><code>q4</code></td><td><code>S</code></td><td><code>R</code></td></tr>
+<tr><td><code>q4</code></td><td><code>i</code></td><td><code>q6</code></td><td><code>I</code></td><td><code>L</code></td></tr>
+<tr><td><code>q5</code></td><td><code>I</code></td><td><code>q5</code></td><td><code>I</code></td><td><code>R</code></td></tr>
+<tr><td><code>q5</code></td><td><code>S</code></td><td><code>q5</code></td><td><code>S</code></td><td><code>R</code></td></tr>
+<tr><td><code>q5</code></td><td><code>s</code></td><td><code>q6</code></td><td><code>S</code></td><td><code>L</code></td></tr>
+<tr><td><code>q6</code></td><td><code>I</code></td><td><code>q6</code></td><td><code>I</code></td><td><code>L</code></td></tr>
+<tr><td><code>q6</code></td><td><code>S</code></td><td><code>q6</code></td><td><code>S</code></td><td><code>L</code></td></tr>
+<tr><td><code>q6</code></td><td><code>:</code></td><td><code>q7</code></td><td><code>:</code></td><td><code>L</code></td></tr>
+<tr><td><code>q7</code></td><td><code>i</code></td><td><code>q7</code></td><td><code>i</code></td><td><code>L</code></td></tr>
+<tr><td><code>q7</code></td><td><code>s</code></td><td><code>q7</code></td><td><code>s</code></td><td><code>L</code></td></tr>
+<tr><td><code>q7</code></td><td><code>I</code></td><td><code>q8</code></td><td><code>I</code></td><td><code>R</code></td></tr>
+<tr><td><code>q7</code></td><td><code>S</code></td><td><code>q8</code></td><td><code>S</code></td><td><code>R</code></td></tr>
+<tr><td><code>q8</code></td><td><code>i</code></td><td><code>q2</code></td><td><code>I</code></td><td><code>R</code></td></tr>
+<tr><td><code>q8</code></td><td><code>s</code></td><td><code>q3</code></td><td><code>S</code></td><td><code>R</code></td></tr>
+<tr><td><code>q8</code></td><td><code>:</code></td><td><code>q9</code></td><td><code>:</code></td><td><code>R</code></td></tr>
+<tr><td><code>q9</code></td><td><code>I</code></td><td><code>q9</code></td><td><code>I</code></td><td><code>R</code></td></tr>
+<tr><td><code>q9</code></td><td><code>S</code></td><td><code>q9</code></td><td><code>S</code></td><td><code>R</code></td></tr>
+<tr><td><code>q9</code></td><td><code>&gt;</code></td><td><code>q10</code></td><td><code>&gt;</code></td><td><code>L</code></td></tr></tbody>
+  </table>
+
+  <h2>4. Bateria de Testes Obrigatórios e Resultados (50 Casos Oficiais)</h2>
+  <p>Todos os testes foram verificados no <code>pytest</code> (<strong>227 passed</strong>: 135 AV1 + 92 AV2, incluindo enumeração exaustiva de 3.280 cadeias no ALL) e no motor real do <code>JFLAP7.1.jar</code> (<strong>418 casos, 0 divergências</strong>; 0 estados não-determinísticos em <code>ap.jff</code>).</p>
+
+  <h3>4.1 AP Isolado (10 aceitas ≥ 18 + 10 rejeitadas ≥ 18 + 2 casos-limite)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Entrada</th><th>Tam</th><th>Esperado</th><th>Obtido</th><th>Passos</th><th>Regra Verificada</th></tr></thead>
+    <tbody><tr><td><code>AP-A01</code></td><td><code>p{(()){}}#isisi:isisi;</code></td><td>22</td><td>Aceita</td><td class='ok'>Aceita</td><td>23</td><td>Aninhamento misto de blocos e expressões com assinatura e chamada válidas (22 chars).</td></tr>
+<tr><td><code>AP-A02</code></td><td><code>p{((()))}#isisis:sisi;</code></td><td>22</td><td>Aceita</td><td class='ok'>Aceita</td><td>23</td><td>Parênteses profundamente aninhados; AP aceita mesmo com aridades diferentes (22 chars).</td></tr>
+<tr><td><code>AP-A03</code></td><td><code>p{{({})}}#iiisss:ssii;</code></td><td>22</td><td>Aceita</td><td class='ok'>Aceita</td><td>23</td><td>Escopos aninhados em 3 níveis com expressão interna e tipos variados (22 chars).</td></tr>
+<tr><td><code>AP-A04</code></td><td><code>p{()()()}#sisisi:isii;</code></td><td>22</td><td>Aceita</td><td class='ok'>Aceita</td><td>23</td><td>Três expressões sequenciais no escopo principal (22 chars).</td></tr>
+<tr><td><code>AP-A05</code></td><td><code>p{{}(){}}#iissii:siss;</code></td><td>22</td><td>Aceita</td><td class='ok'>Aceita</td><td>23</td><td>Combinação sequencial de sub-blocos vazios e expressão vazia (22 chars).</td></tr>
+<tr><td><code>AP-A06</code></td><td><code>p{({()})}#ssssss:iiii;</code></td><td>22</td><td>Aceita</td><td class='ok'>Aceita</td><td>23</td><td>Alternância estrita entre parênteses e chaves em 4 níveis de pilha (22 chars).</td></tr>
+<tr><td><code>AP-A07</code></td><td><code>p{(()){}}#isisiisis:isisiisis;</code></td><td>30</td><td>Aceita</td><td class='ok'>Aceita</td><td>31</td><td>Cadeia completa reaproveitada na integração (cenário aceito por ambos, 30 chars).</td></tr>
+<tr><td><code>AP-A08</code></td><td><code>p{(()){}}#isisiisis:isisiissi;</code></td><td>30</td><td>Aceita</td><td class='ok'>Aceita</td><td>31</td><td>Sintaxe correta com ordem de tipos trocada — AP aceita (cenário 3 de integração, 30 chars).</td></tr>
+<tr><td><code>AP-A09</code></td><td><code>p{{{()}}}#is:isisiisis;</code></td><td>23</td><td>Aceita</td><td class='ok'>Aceita</td><td>24</td><td>Escopo triplo com assinatura curta e chamada longa (23 chars).</td></tr>
+<tr><td><code>AP-A10</code></td><td><code>p{({})()}#iiiiiiii:ss;</code></td><td>22</td><td>Aceita</td><td class='ok'>Aceita</td><td>23</td><td>Escopo com bloco contendo expressão seguida de expressão irmã (22 chars).</td></tr>
+<tr><td><code>AP-R01</code></td><td><code>p{(()){}#isisiisis:isisiisis;</code></td><td>29</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>8</td><td>Chave &#x27;{&#x27; do escopo principal não fechada antes de &#x27;#&#x27; (cenário 2 de integração, 29 chars).</td></tr>
+<tr><td><code>AP-R02</code></td><td><code>p{({)})}#isisis:isisis;</code></td><td>23</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>4</td><td>Cruzamento inválido de delimitadores: &#x27;)&#x27; tentando fechar &#x27;{&#x27; no topo da pilha (23 chars).</td></tr>
+<tr><td><code>AP-R03</code></td><td><code>{(()){}}#isisis:isisis;</code></td><td>23</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>0</td><td>Ausência do cabeçalho obrigatório &#x27;p&#x27; no início do programa (23 chars).</td></tr>
+<tr><td><code>AP-R04</code></td><td><code>p{(()){}}}#isisi:isisi;</code></td><td>23</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>10</td><td>Chave &#x27;}&#x27; excedente após o fechamento do escopo principal (23 chars).</td></tr>
+<tr><td><code>AP-R05</code></td><td><code>p{(()){}}isisi:isisis;</code></td><td>22</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>10</td><td>Ausência do separador &#x27;#&#x27; entre escopos e seção de assinatura/chamada (22 chars).</td></tr>
+<tr><td><code>AP-R06</code></td><td><code>p{(()){}}#:isisisisisi;</code></td><td>23</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>11</td><td>Bloco de assinatura vazio antes de &#x27;:&#x27; (violação de T -&gt; iR | sR, 23 chars).</td></tr>
+<tr><td><code>AP-R07</code></td><td><code>p{(()){}}#isisisisisi:;</code></td><td>23</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>23</td><td>Bloco de chamada vazio após &#x27;:&#x27; (violação de T -&gt; iR | sR, 23 chars).</td></tr>
+<tr><td><code>AP-R08</code></td><td><code>p{(()){}}#isisis:isisis</code></td><td>23</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>24</td><td>Ausência do terminador &#x27;;&#x27; ao final da cadeia (estado final q8 não atingido, 23 chars).</td></tr>
+<tr><td><code>AP-R09</code></td><td><code>p{(()){}}#isisi:isisi;;</code></td><td>23</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>23</td><td>Símbolo excedente &#x27;;&#x27; após o estado final q8 (entrada não pode ter sobras, 23 chars).</td></tr>
+<tr><td><code>AP-R10</code></td><td><code>p{(()){}}#is:is:isisis;</code></td><td>23</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>16</td><td>Separador &#x27;:&#x27; duplicado na seção de assinatura/chamada (23 chars).</td></tr>
+<tr><td><code>AP-L01</code></td><td><code>"" (vazia)</code></td><td>0</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>0</td><td>Caso-limite: cadeia vazia (rejeitada sem consumir entrada, permanece em q0).</td></tr>
+<tr><td><code>AP-L02</code></td><td><code>p{}#i:i;</code></td><td>8</td><td>Aceita</td><td class='ok'>Aceita</td><td>9</td><td>Caso-limite: menor cadeia aceita pela GLC e pelo AP (8 caracteres).</td></tr></tbody>
+  </table>
+
+  <h3>4.2 ALL Isolado (10 aceitas ≥ 18 + 10 rejeitadas ≥ 18 + 3 casos-limite)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Entrada</th><th>Tam</th><th>Esperado</th><th>Obtido</th><th>Passos</th><th>Regra Verificada</th></tr></thead>
+    <tbody><tr><td><code>ALL-A01</code></td><td><code>isisiisis:isisiisis</code></td><td>19</td><td>Aceita</td><td class='ok'>Aceita</td><td>201</td><td>Cópia exata de 9 parâmetros mistos (reaproveitada na integração, 19 chars).</td></tr>
+<tr><td><code>ALL-A02</code></td><td><code>iiiiiiiii:iiiiiiiii</code></td><td>19</td><td>Aceita</td><td class='ok'>Aceita</td><td>201</td><td>Nove parâmetros homogêneos do tipo &#x27;i&#x27; (int) idênticos (19 chars).</td></tr>
+<tr><td><code>ALL-A03</code></td><td><code>sssssssss:sssssssss</code></td><td>19</td><td>Aceita</td><td class='ok'>Aceita</td><td>201</td><td>Nove parâmetros homogêneos do tipo &#x27;s&#x27; (string) idênticos (19 chars).</td></tr>
+<tr><td><code>ALL-A04</code></td><td><code>iiiiisssss:iiiiisssss</code></td><td>21</td><td>Aceita</td><td class='ok'>Aceita</td><td>243</td><td>Dois blocos contíguos (5 &#x27;i&#x27; seguidos de 5 &#x27;s&#x27;) espelhados diretamente (21 chars).</td></tr>
+<tr><td><code>ALL-A05</code></td><td><code>sssssiiiii:sssssiiiii</code></td><td>21</td><td>Aceita</td><td class='ok'>Aceita</td><td>243</td><td>Dois blocos contíguos (5 &#x27;s&#x27; seguidos de 5 &#x27;i&#x27;) idênticos (21 chars).</td></tr>
+<tr><td><code>ALL-A06</code></td><td><code>isisisisis:isisisisis</code></td><td>21</td><td>Aceita</td><td class='ok'>Aceita</td><td>243</td><td>Alternância estrita de 10 parâmetros &#x27;is&#x27; repetida integralmente (21 chars).</td></tr>
+<tr><td><code>ALL-A07</code></td><td><code>siiisssiii:siiisssiii</code></td><td>21</td><td>Aceita</td><td class='ok'>Aceita</td><td>243</td><td>Padrão assimétrico de 10 tipos casado posição a posição (21 chars).</td></tr>
+<tr><td><code>ALL-A08</code></td><td><code>iisssiiis:iisssiiis</code></td><td>19</td><td>Aceita</td><td class='ok'>Aceita</td><td>201</td><td>Assinatura assimétrica de 9 parâmetros casada exatamente (19 chars).</td></tr>
+<tr><td><code>ALL-A09</code></td><td><code>sssiisssi:sssiisssi</code></td><td>19</td><td>Aceita</td><td class='ok'>Aceita</td><td>201</td><td>Sequência de 9 parâmetros começando por &#x27;s&#x27; e terminando em &#x27;i&#x27; (19 chars).</td></tr>
+<tr><td><code>ALL-A10</code></td><td><code>isssiiisss:isssiiisss</code></td><td>21</td><td>Aceita</td><td class='ok'>Aceita</td><td>243</td><td>Sequência simétrica de 10 parâmetros validada em fita limitada (21 chars).</td></tr>
+<tr><td><code>ALL-R01</code></td><td><code>isisiisis:isisiissi</code></td><td>19</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>158</td><td>Erro de ordem posicional nos 2 últimos tipos (&#x27;is&#x27; vs &#x27;si&#x27;); mesmas quantidades (19 chars).</td></tr>
+<tr><td><code>ALL-R02</code></td><td><code>isisiisis:isisiisisi</code></td><td>20</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>200</td><td>Erro de aridade: chamada possui 1 argumento excedente após casar assinatura (20 chars).</td></tr>
+<tr><td><code>ALL-R03</code></td><td><code>isisiisisi:isisiisis</code></td><td>20</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>219</td><td>Erro de aridade: chamada possui 1 argumento a menos do que a assinatura (20 chars).</td></tr>
+<tr><td><code>ALL-R04</code></td><td><code>iiiiiiiii:iiiiiiiis</code></td><td>19</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>179</td><td>Erro de tipo na última posição (&#x27;i&#x27; esperado, &#x27;s&#x27; encontrado, 19 chars).</td></tr>
+<tr><td><code>ALL-R05</code></td><td><code>sssssssss:issssssss</code></td><td>19</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>11</td><td>Erro de tipo logo na 1ª posição (&#x27;s&#x27; esperado, &#x27;i&#x27; encontrado, 19 chars).</td></tr>
+<tr><td><code>ALL-R06</code></td><td><code>iiiiisssss:sssssiiiii</code></td><td>21</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>12</td><td>Erro de ordem: exatamente 5 &#x27;i&#x27; e 5 &#x27;s&#x27; de cada lado, porém invertidos (21 chars).</td></tr>
+<tr><td><code>ALL-R07</code></td><td><code>isisiisisisisiisis</code></td><td>18</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>19</td><td>Ausência do separador &#x27;:&#x27; na fita (cabeçote atinge &#x27;&gt;&#x27; em q2/q3, 18 chars).</td></tr>
+<tr><td><code>ALL-R08</code></td><td><code>isisi:isisi:isisii</code></td><td>18</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>72</td><td>Presença de dois separadores &#x27;:&#x27; na fita (rejeitado na varredura final q9, 18 chars).</td></tr>
+<tr><td><code>ALL-R09</code></td><td><code>:isisiisisisisiisi</code></td><td>18</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>1</td><td>Assinatura vazia antes do separador &#x27;:&#x27; (rejeitado imediatamente em q1, 18 chars).</td></tr>
+<tr><td><code>ALL-R10</code></td><td><code>isisiisisisisiisi:</code></td><td>18</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>19</td><td>Chamada vazia após o separador &#x27;:&#x27; (rejeitado ao encontrar &#x27;&gt;&#x27; em q4/q5, 18 chars).</td></tr>
+<tr><td><code>ALL-L01</code></td><td><code>"" (vazia)</code></td><td>0</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>1</td><td>Caso-limite: cadeia vazia (fita &#x27;&lt;&gt;&#x27;, rejeitada imediatamente em q1 sem cruzar bordas).</td></tr>
+<tr><td><code>ALL-L02</code></td><td><code>:</code></td><td>1</td><td>Rejeita</td><td class='ok'>Rejeita</td><td>1</td><td>Caso-limite: apenas o separador &#x27;:&#x27; sem tipos em nenhum lado (fita &#x27;&lt;:&gt;&#x27;).</td></tr>
+<tr><td><code>ALL-L03</code></td><td><code>i:i</code></td><td>3</td><td>Aceita</td><td class='ok'>Aceita</td><td>9</td><td>Caso-limite: menor cadeia aceita pelo ALL (3 células graváveis + 2 marcadores fixos).</td></tr></tbody>
+  </table>
+
+  <h3>4.3 Integração (3 Cenários Obrigatórios)</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Entrada</th><th>Tam</th><th>AP</th><th>ALL</th><th>Decisão Global</th><th>Regra Verificada</th></tr></thead>
+    <tbody><tr><td><code>INT-01</code></td><td><code>p{(()){}}#isisiisis:isisiisis;</code></td><td>30</td><td>Aceita</td><td>Aceita</td><td><strong>Aceita</strong> (CONCLUIDO)</td><td>Cenário 1: AP aceita a estrutura sintática e ALL aceita a assinatura/chamada idêntica.</td></tr><tr><td><code>INT-02</code></td><td><code>p{(()){}#isisiisis:isisiisis;</code></td><td>29</td><td>Rejeita</td><td>Não executado</td><td><strong>Rejeita</strong> (AP)</td><td>Cenário 2: AP rejeita por &#x27;{&#x27; não fechado; ALL não é executado.</td></tr><tr><td><code>INT-03</code></td><td><code>p{(()){}}#isisiisis:isisiissi;</code></td><td>30</td><td>Aceita</td><td>Rejeita</td><td><strong>Rejeita</strong> (ALL)</td><td>Cenário 3: AP aceita a sintaxe, mas ALL rejeita pela troca posicional dos tipos finais.</td></tr></tbody>
+  </table>
+
+  <h3>4.4 Testes com Símbolo Fora do Alfabeto (Erro Léxico)</h3>
+  <ul><li><strong>LEX-01</strong> — Entrada: <code>p{(()){}}#isisi@isisi;</code><br>Mensagem exibida: <code>Erro léxico (AP): símbolo inválido &#x27;@&#x27; na posição 15. Alfabeto aceito Σ_AP = {p, {, }, (, ), #, i, s, :, ;}.</code></li>
+<li><strong>LEX-02</strong> — Entrada: <code>isisiisis$isisiisis</code><br>Mensagem exibida: <code>Erro léxico (ALL): símbolo inválido &#x27;$&#x27; na posição 9. Alfabeto aceito Σ_ALL = {i, s, :}.</code></li></ul>
+
+  <h2>5. Limitações Observadas, Contribuições e Declaração de IA</h2>
+  <ul>
+    <li><strong>Limitações observadas:</strong> (1) complexidade temporal <code>O(n²)</code> do ALL em fita única (ex.: 19 chars → 201 passos); (2) subconjunto de 2 tipos (<code>i</code>, <code>s</code>) para preservar clareza nos 11 estados; (3) validação de uma única assinatura/chamada por cadeia formal.</li>
+    <li><strong>Contribuições:</strong> <em>Andrey Lourival Andrade Garcia</em> (especificação formal, motor Python, CLI, Interface Web Interativa, gerador/validador JFLAP 7.1 e testes); <em>Igor Cecim Vilhena</em> (pesquisa bibliográfica, provas pelo Lema do Bombeamento, revisão da derivação e dos 50 casos, relatório técnico, slides e análise de limitações).</li>
+    <li><strong>Uso de IA:</strong> Google Antigravity / Gemini (AV2) e Claude / ChatGPT (AV1) usados como apoio de estruturação, código, interface e revisão textual. A equipe verificou todas as provas, transições, 227 testes <code>pytest</code> e 418 casos reais no <code>JFLAP7.1.jar</code> (0 divergências).</li>
+  </ul>
+
+  <h2>6. Referências</h2>
+  <ol>
+    <li>SIPSER, M. <em>Introduction to the Theory of Computation</em>. 3. ed. Cengage Learning, 2013.</li>
+    <li>HOPCROFT, J. E.; MOTWANI, R.; ULLMAN, J. D. <em>Introduction to Automata Theory, Languages, and Computation</em>. 3. ed. Pearson, 2007.</li>
+    <li>AHO, A. V. et al. <em>Compilers: Principles, Techniques, and Tools</em>. 2. ed. Pearson, 2006.</li>
+    <li>RODGER, S. H.; FINLEY, T. W. <em>JFLAP: An Interactive Formal Languages and Automata Package</em>. Jones &amp; Bartlett, 2006.</li>
+    <li>SOUZA, D. L. <em>Atividade Prática AV2: Linguagens Livres de Contexto e Sensíveis ao Contexto</em>. CESUPA, 2026.</li>
+  </ol>
+</body>
+</html>

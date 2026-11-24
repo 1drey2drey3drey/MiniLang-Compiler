@@ -1,0 +1,35 @@
+\chapter{Problema, Motivação e Fundamentação Teórica}
+
+\section{Contexto e Originalidade do Problema}
+
+O projeto \textbf{MiniLang-Compiler (AV2)} é uma solução própria concebida como evolução direta do analisador léxico \texttt{MiniLang-MiniLexer} desenvolvido pela equipe na AV1~\cite{av1}. Enquanto a AV1 cobriu o nível \textbf{Tipo 3 (Regular)} da Hierarquia de Chomsky (Expressões Regulares e AFN$\varepsilon$ de Thompson), a AV2 implementa as duas etapas seguintes de um compilador real em um único pipeline de validação:
+
+\begin{enumerate}
+    \item \textbf{Etapa 1 --- Análise Sintática (\texttt{MiniParser}, Tipo 2 / LLC):} um Autômato de Pilha Determinístico (AP) valida a estrutura sintática de programas compactos da \texttt{MiniLang} contendo cabeçalho \texttt{p} (\texttt{program}), escopos \texttt{\{...\}} e expressões \texttt{(...)} aninhados e balanceados, seguidos do separador \texttt{\#}, de uma assinatura de parâmetros tipados (\texttt{i} = \texttt{int}, \texttt{s} = \texttt{string}), do separador \texttt{:}, dos argumentos da chamada e do terminador \texttt{;}.
+    \item \textbf{Etapa 2 --- Análise Semântica (\texttt{MiniSemantic}, Tipo 1 / LSC):} executada \emph{exclusivamente} se o AP aceitar, um Autômato Linearmente Limitado Determinístico (ALL) recebe a fatia semântica \texttt{w:u} delimitada entre \texttt{\#} e \texttt{;} em uma fita finita com marcadores fixos \texttt{<} e \texttt{>}, verificando se a chamada possui exatamente a mesma aridade e a mesma ordem posicional de tipos declarada na assinatura ($w = u$).
+\end{enumerate}
+
+A escolha distancia-se integralmente de exercícios de sala e do exemplo da lauda~\cite{atividade} (parênteses e contagem de blocos \texttt{RRVVEE}), refletindo uma separação clássica documentada na literatura de compiladores~\cite{aho}: analisadores sintáticos baseados em GLC validam aninhamento arbitrário de blocos e parênteses, mas são teoricamente incapazes de impor igualdade posicional entre declaração e chamada de função.
+
+\section{Fundamentação da Classificação na Hierarquia de Chomsky}
+
+\subsection{Por que $L_1$ é Livre de Contexto e não é Regular}
+
+A linguagem sintática $L_1 = \{ \texttt{p\{}\alpha\texttt{\}\#}w\texttt{:}u\texttt{;} \mid \alpha \in D_2^*, \, w, u \in \{\texttt{i}, \texttt{s}\}^+ \}$ é gerada pela GLC $G$ (Capítulo~2), logo $L_1 \in \text{LLC}$. Para provar que $L_1 \notin \text{LR}$, aplica-se o \textbf{Lema do Bombeamento para Linguagens Regulares}~\cite{sipser,hopcroft}:
+
+\begin{quote}
+Suponha por contradição que $L_1$ seja regular com comprimento de bombeamento $p \ge 3$. Considere $z = \texttt{p\{(}^p\texttt{)}^p\texttt{\}\#i:i;} \in L_1$. Em qualquer decomposição $z = xyz$ com $|xy| \le p$ e $|y| \ge 1$, o fator $y$ encontra-se contido no prefixo $\texttt{p\{(}^{p-2}$. Ao bombear $xy^2z$: (a) se $y$ contém \texttt{p}, surgem múltiplos cabeçalhos \texttt{p}; (b) se $y$ contém \texttt{\{}, cria-se excesso de chaves abertas sem fechamento; (c) se $y \in \texttt{(}^+$, o número de \texttt{(} excede o de \texttt{)}. Em todos os casos $xy^2z \notin L_1$. Contradição. Portanto, $L_1$ não pode ser representada por linguagem regular.
+\end{quote}
+
+\subsection{Por que $L_2$ é Sensível ao Contexto e não é Livre de Contexto}
+
+A linguagem semântica $L_2 = \{ w\texttt{:}w \mid w \in \{\texttt{i}, \texttt{s}\}^+ \}$ é reconhecida pelo ALL $M_{\text{ALL}}$ (Capítulo~3) em espaço estritamente linear ($n$ células graváveis + 2 bordas fixas), logo $L_2 \in \text{LSC}$~\cite{hopcroft}. Para provar que $L_2 \notin \text{LLC}$, aplica-se o \textbf{Lema do Bombeamento para Linguagens Livres de Contexto}~\cite{sipser}:
+
+\begin{quote}
+Suponha por contradição que $L_2$ seja livre de contexto com constante de bombeamento $p \ge 1$. Considere $z = \texttt{i}^p\texttt{s}^p\texttt{:}\texttt{i}^p\texttt{s}^p \in L_2$ e decomponha $z = uvwxy$ com $|vwx| \le p$ e $|vx| \ge 1$.
+\begin{itemize}
+    \item Se $vwx$ está inteiramente à esquerda (ou inteiramente à direita) de \texttt{:}, então $uv^2wx^2y$ aumenta o tamanho de apenas uma metade, violando $w=u$.
+    \item Se $vwx$ contém \texttt{:}, então, como $|vwx| \le p$, ele só alcança o bloco $\texttt{s}^p$ à esquerda e o bloco $\texttt{i}^p$ à direita. Se \texttt{:} ocorre em $v$ ou $x$, então $uv^0wx^0y$ remove \texttt{:} ($\notin L_2$). Caso contrário, $v \in \texttt{s}^*$ e $x \in \texttt{i}^*$, de modo que $uv^2wx^2y$ altera o total de \texttt{s} à esquerda e/ou de \texttt{i} à direita sem alterar \texttt{s} à direita nem \texttt{i} à esquerda, destruindo a igualdade das metades ($\notin L_2$).
+\end{itemize}
+Contradição. Logo, $L_2$ não é livre de contexto e exige a capacidade de memória com acesso bidirecional de um ALL.
+\end{quote}

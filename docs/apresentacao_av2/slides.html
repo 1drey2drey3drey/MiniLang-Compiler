@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slides — MiniLang-Compiler (AV2 de LFA)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #4ade80;
+      --err: #f87171;
+      --warn: #fbbf24;
+      --mono: "Cascadia Code", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #020617;
+      color: var(--text);
+    }
+    .hud {
+      position: fixed;
+      bottom: 14px;
+      right: 18px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #334155;
+      font-size: 13px;
+    }
+    .hud button {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+    .slide {
+      width: min(1180px, 96vw);
+      min-height: 660px;
+      margin: 24px auto;
+      padding: 48px 56px;
+      background: var(--bg);
+      border: 1px solid #334155;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+    }
+    .slide-kicker {
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+    h1 { font-size: 2.5rem; margin: 0 0 12px; line-height: 1.15; }
+    h2 { font-size: 1.85rem; margin: 0 0 18px; color: #ffffff; }
+    p, li { font-size: 1.12rem; line-height: 1.55; color: #e2e8f0; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .box {
+      background: var(--card);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 18px 22px;
+    }
+    .box h3 { margin: 0 0 10px; color: var(--accent); font-size: 1.15rem; }
+    code, pre { font-family: var(--mono); }
+    pre {
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.94rem;
+      overflow: auto;
+      margin: 8px 0;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { border-bottom: 1px solid #334155; padding: 8px 10px; text-align: left; }
+    th { color: var(--accent); }
+    .ok { color: var(--ok); font-weight: 700; }
+    .err { color: var(--err); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid #1e293b;
+      padding-top: 12px;
+      margin-top: 20px;
+    }
+    @media print {
+      body { background: #ffffff; }
+      .hud { display: none; }
+      .slide {
+        width: 100%;
+        min-height: 98vh;
+        margin: 0;
+        border-radius: 0;
+        border: none;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <button type="button" onclick="nav(-1)">◀</button>
+    <span id="hud-pos">1 / 11</span>
+    <button type="button" onclick="nav(1)">▶</button>
+    <button type="button" onclick="window.print()">Imprimir / PDF</button>
+  </div>
+
+  <!-- SLIDE 1 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">CESUPA • Linguagens Formais e Autômatos • AV2 (CC6NA)</div>
+      <h1>MiniLang-Compiler (AV2)</h1>
+      <p style="font-size:1.35rem; color:#94a3b8;">Validação de Programas em Duas Etapas: Autômato de Pilha (GLC) e Autômato Linearmente Limitado (LSC)</p>
+      <div class="grid2" style="margin-top:32px;">
+        <div class="box">
+          <h3>Equipe</h3>
+          <p><strong>Andrey Lourival Andrade Garcia</strong><br><strong>Igor Cecim Vilhena</strong></p>
+        </div>
+        <div class="box">
+          <h3>Docente e Data</h3>
+          <p>Prof. Daniel Leal Souza<br>25 de novembro de 2026 • Evolução do <code>MiniLang-MiniLexer</code> (AV1)</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>MiniLang-Compiler (AV2)</span><span>Slide 1 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 2 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">1. Problema e Evolução na Hierarquia de Chomsky</div>
+      <h2>Do MiniLexer (AV1) ao MiniLang-Compiler (AV2)</h2>
+      <div class="grid3">
+        <div class="box">
+          <h3>AV1 — Léxico (Tipo 3)</h3>
+          <p>ER + AFNε de Thompson.<br>Preservado no repositório com <strong>135 testes</strong>.</p>
+        </div>
+        <div class="box">
+          <h3>AV2 Etapa 1 — Sintático (Tipo 2)</h3>
+          <p><strong>GLC LL(1) + DPDA (9 estados)</strong>.<br>Valida escopos <code>{...}</code> e expressões <code>(...)</code> aninhados + formato <code>#w:u;</code>.</p>
+        </div>
+        <div class="box">
+          <h3>AV2 Etapa 2 — Semântico (Tipo 1)</h3>
+          <p><strong>LSC + D-LBA (11 estados)</strong>.<br>Valida aridade e ordem posicional exata de tipos: <code>w:w</code> (<code>i</code>=int, <code>s</code>=string).</p>
+        </div>
+      </div>
+      <pre>Exemplo de cadeia válida (30 chars):  p{(()){}}#isisiisis:isisiisis;
+                                      ├─── Etapa 1 (AP) ───┤└── Etapa 2 (ALL): 19 chars ──┘</pre>
+    </div>
+    <div class="footer"><span>Andrey &amp; Igor • CC6NA</span><span>Slide 2 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 3 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">2. Fundamentação Formal</div>
+      <h2>Classificação na Hierarquia de Chomsky</h2>
+      <div class="grid2">
+        <div class="box">
+          <h3>Etapa 1: L₁ ∈ LLC \ LR</h3>
+          <p><code>L₁ = { p{α}#w:u; | α ∈ D₂*, w,u ∈ {i,s}⁺ }</code></p>
+          <ul>
+            <li><strong>Prova (Bombeamento Regular):</strong> para <code>z = p{(ᵖ)ᵖ}#i:i;</code>, qualquer fator <code>y</code> com <code>|xy| ≤ p</code> cai em <code>p{(ᵖ⁻²</code>.</li>
+            <li>Bombear <code>xy²z</code> duplica <code>p</code>, desequilibra <code>{</code> ou cria mais <code>(</code> do que <code>)</code> ⇒ <code>xy²z ∉ L₁</code>.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Etapa 2: L₂ ∈ LSC \ LLC</h3>
+          <p><code>L₂ = { w:w | w ∈ {i,s}⁺ }</code></p>
+          <ul>
+            <li><strong>Prova (Bombeamento LLC):</strong> para <code>z = iᵖsᵖ:iᵖsᵖ</code>, com <code>|vwx| ≤ p</code>:</li>
+            <li>Se <code>vwx</code> fica de um lado só, quebra o tamanho; se cruza <code>:</code>, só atinge <code>sᵖ</code> à esq. e <code>iᵖ</code> à dir., quebrando igualdade posicional.</li>
+            <li>Reconhecida em fita linearmente limitada ⇒ <strong>LSC</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Referências: Sipser (2013), Hopcroft et al. (2007), Aho et al. (2006)</span><span>Slide 3 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 4 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">3. Etapa 1 — Gramática Livre de Contexto</div>
+      <h2>GLC LL(1) e Derivação Passo a Passo</h2>
+      <div class="grid2">
+        <div class="box">
+          <h3>Produções de G = (V, T, P, S)</h3>
+          <pre>V = { S, B, T, R }
+T = { p, {, }, (, ), #, i, s, :, ; }
+
+P1: S → p{ B }# T : T ;
+P2: B → { B } B
+P3: B → ( B ) B
+P4: B → ε
+P5: T → i R      P6: T → s R
+P7: R → i R      P8: R → s R      P9: R → ε</pre>
+        </div>
+        <div class="box">
+          <h3>Derivação de <code>p{(()){}}#isisi:isisi;</code> (22 chars)</h3>
+          <pre>S ⇒ p{B}#T:T;                       [P1]
+  ⇒ p{(B)B}#T:T;                    [P3]
+  ⇒ p{((B)B)B}#T:T;                 [P3]
+  ⇒* p{(())B}#T:T;                  [P4, P4]
+  ⇒ p{(()){B}B}#T:T;                [P2]
+  ⇒* p{(()){}}#T:T;                 [P4, P4]
+  ⇒* p{(()){}}#isisi:T;             [P5,P8,P7,P8,P7,P9]
+  ⇒* p{(()){}}#isisi:isisi;         [P5,P8,P7,P8,P7,P9]</pre>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Gramática LL(1) não-ambígua • glc.jff validado no JFLAP 7.1</span><span>Slide 4 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 5 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">4. Etapa 1 — Autômato de Pilha Determinístico</div>
+      <h2>AP (MiniParser): 9 Estados e Relação com a GLC</h2>
+      <div class="grid2">
+        <div class="box">
+          <h3>Especificação da 7-tupla</h3>
+          <ul>
+            <li><strong>Estados (9 ≥ 8):</strong> <code>q0..q8</code>, inicial <code>q0</code>, final <code>F = {q8}</code>.</li>
+            <li><strong>Pilha:</strong> <code>Γ = {Z, {, (}</code>, topo inicial <code>Z</code>.</li>
+            <li><strong>Aceitação:</strong> estado final <code>q8</code> + <strong>consumo integral</strong> da entrada.</li>
+            <li><strong>Determinismo:</strong> <code>0</code> estados não-determinísticos (validado pelo JFLAP 7.1).</li>
+            <li><strong>Terminação:</strong> no máximo <code>n + 1</code> passos (<code>O(n)</code>).</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Fluxo dos Estados</h3>
+          <pre>q0 --p--> q1 --{ / push {--> q2 (empilha {,( / desempilha },))
+q2 --ε, Z / Z--> q3 (escopo principal fechado)
+q3 --#--> q4 --i|s--> q5 (assinatura {i,s}⁺)
+q5 --:--> q6 --i|s--> q7 (chamada {i,s}⁺)
+q7 --;--> q8 (ACEITA)</pre>
+          <p style="font-size:0.95rem; color:#94a3b8;">A pilha acima de <code>Z</code> em <code>q2</code> mantém exatamente os blocos abertos de <code>B</code>, garantindo <code>L(M_AP) = L(G)</code>.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>ap.jff • 9 estados • 0 divergências no JFLAP 7.1</span><span>Slide 5 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 6 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">5. Etapa 2 — Autômato Linearmente Limitado</div>
+      <h2>ALL (MiniSemantic): 11 Estados em Fita Limitada</h2>
+      <div class="grid2">
+        <div class="box">
+          <h3>Modelo de Fita Estritamente Limitada</h3>
+          <ul>
+            <li><strong>Estados (11 ≥ 8):</strong> <code>q0..q10</code>, final <code>F = {q10}</code>.</li>
+            <li><strong>Alfabetos:</strong> <code>Σ = {i, s, :}</code>; <code>Γ = {&lt;, &gt;, i, s, :, I, S}</code>.</li>
+            <li><strong>Memória:</strong> exatamente <code>n</code> células graváveis (<code>1..n</code>) + <strong>2 bordas fixas</strong> <code>&lt;</code> (pos 0) e <code>&gt;</code> (pos <code>n+1</code>).</li>
+            <li><strong>Segurança de borda:</strong> <code>&lt;</code> só move <code>R</code> (em <code>q0</code>), <code>&gt;</code> só move <code>L</code> (em <code>q9</code>). Jamais sobrescreve ou cruza bordas.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Algoritmo In-Place (Casamento Posicional)</h3>
+          <ol>
+            <li><code>q0→q1</code>: entra pela borda <code>&lt;</code> e exige assinatura não vazia.</li>
+            <li><code>q1/q8</code>: marca próximo símbolo à esq. (<code>i→I</code> vai para <code>q2</code>; <code>s→S</code> vai para <code>q3</code>).</li>
+            <li><code>q2/q3→q4/q5</code>: cruza <code>:</code>, pula <code>I/S</code> e exige o mesmo tipo à direita.</li>
+            <li><code>q6→q7→q8</code>: volta até a fronteira marcada e repete.</li>
+            <li><code>q8→q9→q10</code>: ao ver <code>:</code>, varre sobras até <code>&gt;</code> e aceita em <code>q10</code>.</li>
+          </ol>
+          <p style="font-size:0.95rem; color:#94a3b8;"><strong>Terminação:</strong> marcação irreversível em cada ciclo ⇒ <code>O(n²)</code>.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>all.jff • 11 estados • 384 casos com 0 divergências no JFLAP 7.1</span><span>Slide 6 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 7 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">6. Demonstração Ao Vivo (Interface Web + CLI + JFLAP)</div>
+      <h2>Os 3 Cenários de Integração + Erro Léxico</h2>
+      <table>
+        <thead>
+          <tr><th>Cenário</th><th>Entrada (≥ 18 chars)</th><th>Etapa 1 (AP)</th><th>Etapa 2 (ALL)</th><th>Regra Verificada</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>INT-01</strong></td>
+            <td><code>p{(()){}}#isisiisis:isisiisis;</code> (30)</td>
+            <td class="ok">ACEITA (31 passos)</td>
+            <td class="ok">ACEITA (201 passos)</td>
+            <td>Escopos balanceados + 9 tipos idênticos na mesma ordem</td>
+          </tr>
+          <tr>
+            <td><strong>INT-02</strong></td>
+            <td><code>p{(()){}#isisiisis:isisiisis;</code> (29)</td>
+            <td class="err">REJEITA (em q2)</td>
+            <td style="color:#94a3b8;">NÃO EXECUTA</td>
+            <td>Chave <code>{</code> do escopo principal sem fechamento antes de <code>#</code></td>
+          </tr>
+          <tr>
+            <td><strong>INT-03</strong></td>
+            <td><code>p{(()){}}#isisiisis:isisiissi;</code> (30)</td>
+            <td class="ok">ACEITA (31 passos)</td>
+            <td class="warn">REJEITA (em q4)</td>
+            <td>Mesmas quantidades de <code>i</code>/<code>s</code>, mas ordem invertida no fim (<code>is</code> vs <code>si</code>)</td>
+          </tr>
+          <tr>
+            <td><strong>LEX-01</strong></td>
+            <td><code>p{(()){}}#isisi@isisi;</code> (22)</td>
+            <td class="err" colspan="2">ERRO LÉXICO (posição 15: símbolo '@' fora de Σ_AP)</td>
+            <td>Validação de alfabeto antes dos autômatos</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:18px;">Comando ao vivo: <code>.\.venv\Scripts\python.exe -m src.av2.web</code> — editor <code>programa.min</code> com sublinhado de erro, modo <code>raw</code> sincronizado e grafos SVG em <code>⛶ fullscreen</code>.</p>
+    </div>
+    <div class="footer"><span>Demonstração interativa: Pilha + Fita Limitada + Derivação</span><span>Slide 7 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 8 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">7. Bateria de Testes e Validação Cruzada</div>
+      <h2>Resultados: 227 Testes no pytest + 418 no JFLAP 7.1</h2>
+      <div class="grid2">
+        <div class="box">
+          <h3>Cobertura da Lauda (50 Casos Oficiais)</h3>
+          <ul>
+            <li><strong>AP isolado:</strong> 10 aceitas (≥ 18) + 10 rejeitadas (≥ 18) + 2 limites (<code>""</code>, <code>p{}#i:i;</code>).</li>
+            <li><strong>ALL isolado:</strong> 10 aceitas (≥ 18) + 10 rejeitadas (≥ 18: aridade, tipo, ordem, <code>:</code>) + 3 limites (<code>""</code>, <code>:</code>, <code>i:i</code>).</li>
+            <li><strong>Integração:</strong> 3 cenários obrigatórios (30/29/30 chars).</li>
+            <li><strong>Erro léxico:</strong> 2 casos (<code>@</code> em Σ_AP e <code>$</code> em Σ_ALL).</li>
+            <li><strong>Enumeração exaustiva ALL:</strong> todas as <strong>3.280 cadeias</strong> de tamanho 0..7 em <code>{i, s, :}*</code>.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Validação Real no JFLAP7.1.jar</h3>
+          <pre>GLC (glc.jff): 9 producoes carregadas
+AP  (ap.jff) : 9 estados, 0 nao-det.,
+               34 casos, 0 divergencias
+ALL (all.jff): 11 estados,
+               384 casos, 0 divergencias
+----------------------------------------
+TOTAL JFLAP  : 418 casos, 0 divergencias
+TOTAL PYTEST : 227 passed (135 AV1 + 92 AV2)</pre>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Fonte única de verdade: src/av2/spec.py</span><span>Slide 8 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 9 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">8. Análise Crítica</div>
+      <h2>Limitações Observadas nos Testes</h2>
+      <div class="grid3">
+        <div class="box">
+          <h3>1. Tempo O(n²) em Fita Única</h3>
+          <p>O movimento ida-e-volta do cabeçote faz o número de passos crescer quadraticamente (ex.: 19 chars → 201 passos no ALL).</p>
+        </div>
+        <div class="box">
+          <h3>2. Subconjunto de 2 Tipos</h3>
+          <p>Modelamos <code>i</code> e <code>s</code> para manter 11 estados didáticos; adicionar <code>float</code>/<code>bool</code>/<code>time</code> exigiria +2 estados de transporte/casamento por tipo.</p>
+        </div>
+        <div class="box">
+          <h3>3. Assinatura Única</h3>
+          <p>Valida uma assinatura e uma chamada por cadeia formal; múltiplas declarações demandariam identificadores e memória auxiliar na fita.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Requisito explícito da apresentação em sala</span><span>Slide 9 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 10 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">9. Divisão da Equipe e Transparência</div>
+      <h2>Contribuições e Declaração de IA</h2>
+      <div class="grid2">
+        <div class="box">
+          <h3>Contribuições</h3>
+          <ul>
+            <li><strong>Andrey Lourival Andrade Garcia:</strong> especificação formal, motor Python (GLC, AP, ALL, pipeline), CLI, Interface Web Interativa, gerador/validador JFLAP 7.1 e testes automatizados.</li>
+            <li><strong>Igor Cecim Vilhena:</strong> fundamentação bibliográfica e provas pelo Lema do Bombeamento, revisão da derivação e dos 50 casos, relatório técnico, slides e análise de limitações.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Uso de IA e Verificação</h3>
+          <p>IA utilizada como apoio na estruturação de código, interface web e revisão textual (detalhado em <code>DECLARACAO_IA.md</code>).</p>
+          <p><strong>Verificado pela equipe:</strong> provas matemáticas, todas as transições de pilha e fita, 227 testes no <code>pytest</code> e 418 casos reais no <code>JFLAP7.1.jar</code> com 0 divergências.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Repositório: github.com/1drey2drey3drey/MiniLang-Compiler</span><span>Slide 10 / 11</span></div>
+  </section>
+
+  <!-- SLIDE 11 -->
+  <section class="slide">
+    <div>
+      <div class="slide-kicker">10. Encerramento</div>
+      <h1>Obrigado!</h1>
+      <p style="font-size:1.3rem;">Prontos para a demonstração de novas entradas e arguição individual.</p>
+      <div class="box" style="margin-top:28px;">
+        <h3>Resumo Rápido para Arguição</h3>
+        <p><strong>AP (9 estados, DPDA):</strong> aceita <code>p{α}#w:u;</code> por estado final (<code>q8</code>) + consumo total da entrada; pilha valida Dyck <code>D₂*</code>.<br>
+        <strong>ALL (11 estados, D-LBA):</strong> recebe <code>&lt;w:u&gt;</code> em <code>n + 2</code> células fixas; aceita <code>w = u</code> em <code>q10</code> sem nunca cruzar ou sobrescrever <code>&lt;</code> e <code>&gt;</code>.</p>
+      </div>
+    </div>
+    <div class="footer"><span>MiniLang-Compiler (AV2) • CC6NA • 25/11/2026</span><span>Slide 11 / 11</span></div>
+  </section>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    let idx = 0;
+    function show(i) {
+      idx = Math.max(0, Math.min(i, slides.length - 1));
+      slides[idx].scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("hud-pos").textContent = `${idx + 1} / ${slides.length}`;
+    }
+    function nav(delta) { show(idx + delta); }
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "PageDown") nav(1);
+      if (e.key === "ArrowLeft" || e.key === "PageUp") nav(-1);
+    });
+  </script>
+</body>
+</html>

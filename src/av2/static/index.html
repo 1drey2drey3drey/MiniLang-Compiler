@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>minilang@cc6na:~/av2$ — MiniLang-Compiler</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <!-- TOP SHELL BAR -->
+  <header class="shell-bar">
+    <div class="shell-prompt" aria-label="MiniLang Compiler Shell">
+      <span class="p-user">minilang@cc6na</span><span class="p-sep">:</span><span class="p-path">~/av2</span><span class="p-dollar">$</span>
+      <span class="cursor-block" aria-hidden="true"></span>
+    </div>
+
+    <nav class="shell-tabs" role="tablist" aria-label="Módulos do compilador">
+      <button type="button" role="tab" id="tab-run" aria-selected="true" tabindex="0">./run</button>
+      <button type="button" role="tab" id="tab-ap" aria-selected="false" tabindex="-1">./ap</button>
+      <button type="button" role="tab" id="tab-all" aria-selected="false" tabindex="-1">./all</button>
+      <button type="button" role="tab" id="tab-glc" aria-selected="false" tabindex="-1">./glc</button>
+      <button type="button" role="tab" id="tab-suite" aria-selected="false" tabindex="-1">./suite</button>
+      <button type="button" role="tab" id="tab-specs" aria-selected="false" tabindex="-1">./specs</button>
+      <button type="button" role="tab" id="tab-man" aria-selected="false" tabindex="-1">./man</button>
+    </nav>
+  </header>
+
+  <main class="shell-main">
+
+    <!-- ======================================================================
+         1. ./run — FRONTPAGE MINIMALISTA (Programa fictício + stdout enxuto)
+         ====================================================================== -->
+    <section role="tabpanel" id="panel-run" aria-labelledby="tab-run">
+      <div class="panel-body">
+
+        <!-- Janela do Editor -->
+        <div class="term-window" id="editor-window">
+          <div class="term-head">
+            <div class="term-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span class="term-title" id="editor-title">programa.min</span>
+            <div class="mode-pills" role="group" aria-label="Modo de entrada">
+              <button type="button" class="mini-pill is-active" id="mode-code-btn">minilang</button>
+              <button type="button" class="mini-pill" id="mode-raw-btn">raw</button>
+            </div>
+            <button type="button" class="ctl-btn" data-fs-target="editor-window" aria-label="Alternar tela cheia do editor">⛶ fullscreen</button>
+            <button type="button" id="run-btn" class="btn-exec">▶ ./compile</button>
+          </div>
+
+          <!-- Barra única sincronizada (atualiza minilang e raw juntos) -->
+          <div class="flag-bar" id="preset-flags">
+            <span class="flag-hint">$ cenários:</span>
+            <button type="button" class="flag-btn is-ok is-active" data-scenario="ok">--valid (INT-01)</button>
+            <button type="button" class="flag-btn is-err" data-scenario="syntax_err">--err-scope (INT-02)</button>
+            <button type="button" class="flag-btn is-warn" data-scenario="semantic_err">--err-types (INT-03)</button>
+            <button type="button" class="flag-btn is-lex" data-scenario="lexical_err">--err-lex (LEX-01)</button>
+          </div>
+
+          <!-- Editor MiniLang com overlay de sublinhado de erro estilo IDE -->
+          <div class="code-box" id="code-box">
+            <div class="gutter" id="code-gutter" aria-hidden="true">1</div>
+            <div class="editor-layer">
+              <pre id="code-backdrop" class="code-backdrop" aria-hidden="true"></pre>
+              <label class="sr-only" for="minilang-editor">Código MiniLang</label>
+              <textarea id="minilang-editor" class="code-input" rows="9" spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <!-- Input Raw Formal com visualizador colorido por símbolo -->
+          <div class="raw-wrap" id="raw-box" hidden>
+            <div class="raw-box">
+              <span class="raw-prefix">&gt;</span>
+              <label class="sr-only" for="raw-input">Cadeia formal</label>
+              <input id="raw-input" type="text" class="raw-input" value="p{(()){}}#isisiisis:isisiisis;" spellcheck="false" autocomplete="off">
+            </div>
+            <div id="raw-visual-strip" class="raw-visual-strip" aria-label="Mapa visual dos símbolos da cadeia formal"></div>
+          </div>
+        </div>
+
+        <!-- STDOUT compacto (3 linhas de status) -->
+        <div class="term-window stdout-window" aria-live="polite">
+          <div class="term-head">
+            <span class="term-title">stdout :: pipeline</span>
+            <span id="stdout-verdict" class="status-tag tag-muted">IDLE</span>
+          </div>
+          <div class="stdout-lines">
+            <div class="out-line">
+              <span class="out-idx">[0]</span>
+              <span class="out-mod">LEXER</span>
+              <span id="out-lex-tag" class="status-tag tag-muted">—</span>
+              <span id="out-lex-info" class="out-info">—</span>
+            </div>
+            <div class="out-line">
+              <span class="out-idx">[1]</span>
+              <span class="out-mod">AP</span>
+              <span id="out-ap-tag" class="status-tag tag-muted">—</span>
+              <span id="out-ap-info" class="out-info">—</span>
+              <button type="button" class="out-link" id="go-ap-btn">./ap →</button>
+              <button type="button" class="out-link" id="go-glc-btn">./glc →</button>
+            </div>
+            <div class="out-line">
+              <span class="out-idx">[2]</span>
+              <span class="out-mod">ALL</span>
+              <span id="out-all-tag" class="status-tag tag-muted">—</span>
+              <span id="out-all-info" class="out-info">—</span>
+              <button type="button" class="out-link" id="go-all-btn">./all →</button>
+            </div>
+            <div id="stdout-comment" class="err-comment" hidden></div>
+          </div>
+        </div>
+
+        <!-- Janelas Colapsáveis (fechadas por padrão = zero poluição) -->
+        <div class="drawer-stack">
+          <details class="term-drawer" id="drawer-projection">
+            <summary>token_projection.log <span class="sum-meta" id="proj-meta"></span></summary>
+            <div class="drawer-body">
+              <div id="projection-chips" class="chip-grid"></div>
+            </div>
+          </details>
+
+          <details class="term-drawer">
+            <summary>compiler_diagnostics.log</summary>
+            <div class="drawer-body">
+              <pre id="diag-log" class="diag-pre"></pre>
+            </div>
+          </details>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         2. ./ap — ETAPA 1 (PILHA ANIMADA)
+         ====================================================================== -->
+    <section role="tabpanel" id="panel-ap" aria-labelledby="tab-ap" hidden="until-found">
+      <div class="panel-body">
+        <form id="ap-form" class="cmd-bar">
+          <span class="cmd-prefix">$ ./ap</span>
+          <label class="sr-only" for="ap-input">Entrada para o AP</label>
+          <input id="ap-input" type="text" class="cmd-input" value="p{(()){}}#isisiisis:isisiisis;" spellcheck="false" autocomplete="off">
+          <span id="ap-badge" class="status-tag tag-muted">—</span>
+          <button type="submit" class="btn-exec">run</button>
+        </form>
+
+        <div class="term-window">
+          <div class="term-head">
+            <span class="term-title">dpda :: 9 states (q0..q8)</span>
+            <div class="ctl-group">
+              <button type="button" class="ctl-btn" id="ap-prev" aria-label="Passo anterior">◀</button>
+              <button type="button" class="ctl-btn is-primary" id="ap-play">▶ play</button>
+              <button type="button" class="ctl-btn" id="ap-next" aria-label="Próximo passo">▶</button>
+              <button type="button" class="ctl-btn" id="ap-end" aria-label="Ir ao fim">⏭</button>
+              <select id="ap-speed" class="ctl-select" aria-label="Velocidade do AP">
+                <option value="800">0.5x</option>
+                <option value="380" selected>1x</option>
+                <option value="140">2x</option>
+              </select>
+              <span id="ap-counter" class="step-pill">0/0</span>
+            </div>
+          </div>
+
+          <div class="viz-body">
+            <div class="state-row" id="ap-state-track"></div>
+            <div class="step-line">
+              <span id="ap-desc" class="step-desc">—</span>
+              <code id="ap-trans" class="step-trans">—</code>
+            </div>
+            <div id="ap-err-comment" class="err-comment" hidden></div>
+
+            <div class="ap-stage">
+              <div class="sub-pane">
+                <div class="sub-label">input_tape</div>
+                <div id="ap-input-strip" class="cell-row"></div>
+              </div>
+              <div class="sub-pane stack-box">
+                <div class="sub-label">stack (lifo)</div>
+                <div class="stack-well">
+                  <div id="ap-stack-tower" class="stack-col"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <details class="term-drawer" open>
+          <summary>graph_ap.svg :: DPDA (9 estados, 20 transições)</summary>
+          <div class="drawer-body graph-panel" id="ap-graph-panel">
+            <div class="graph-toolbar">
+              <span class="graph-caption">DPDA · 9 estados (q0..q8)</span>
+              <div class="ctl-group">
+                <button type="button" class="ctl-btn" data-proxy-click="ap-prev" aria-label="Passo anterior">◀</button>
+                <button type="button" class="ctl-btn is-primary" data-proxy-click="ap-play">▶/⏸</button>
+                <button type="button" class="ctl-btn" data-proxy-click="ap-next" aria-label="Próximo passo">▶</button>
+                <button type="button" class="ctl-btn" data-fs-target="ap-graph-panel" aria-label="Alternar tela cheia do grafo do AP">⛶ fullscreen</button>
+              </div>
+            </div>
+            <svg id="ap-graph-svg" class="aut-svg" viewBox="0 0 920 348" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grafo do Autômato de Pilha com 9 estados e transições"></svg>
+          </div>
+        </details>
+
+        <details class="term-drawer">
+          <summary>trace_ap.log</summary>
+          <div class="drawer-body">
+            <div tabindex="0" role="region" aria-label="Tabela de trace do AP" class="table-wrapper">
+              <table class="shell-tbl">
+                <thead>
+                  <tr><th>#</th><th>state</th><th>pos</th><th>stack</th><th>rem</th><th>delta</th></tr>
+                </thead>
+                <tbody id="ap-trace-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         3. ./all — ETAPA 2 (FITA LIMITADA ANIMADA)
+         ====================================================================== -->
+    <section role="tabpanel" id="panel-all" aria-labelledby="tab-all" hidden="until-found">
+      <div class="panel-body">
+        <form id="all-form" class="cmd-bar">
+          <span class="cmd-prefix">$ ./all</span>
+          <label class="sr-only" for="all-input">Entrada w:u para o ALL</label>
+          <input id="all-input" type="text" class="cmd-input" value="isisiisis:isisiisis" spellcheck="false" autocomplete="off">
+          <span id="all-badge" class="status-tag tag-muted">—</span>
+          <button type="submit" class="btn-exec">run</button>
+        </form>
+
+        <div class="term-window">
+          <div class="term-head">
+            <span class="term-title">d-lba :: 11 states · <span id="all-size-lbl">0+2 cells</span></span>
+            <div class="ctl-group">
+              <button type="button" class="ctl-btn" id="all-prev" aria-label="Passo anterior">◀</button>
+              <button type="button" class="ctl-btn is-primary" id="all-play">▶ play</button>
+              <button type="button" class="ctl-btn" id="all-next" aria-label="Próximo passo">▶</button>
+              <button type="button" class="ctl-btn" id="all-end" aria-label="Ir ao fim">⏭</button>
+              <select id="all-speed" class="ctl-select" aria-label="Velocidade do ALL">
+                <option value="420">0.5x</option>
+                <option value="140" selected>1x</option>
+                <option value="35">3x</option>
+              </select>
+              <span id="all-counter" class="step-pill">0/0</span>
+            </div>
+          </div>
+
+          <div class="viz-body">
+            <div class="state-row" id="all-state-track"></div>
+            <div class="step-line">
+              <span id="all-desc" class="step-desc">—</span>
+              <code id="all-trans" class="step-trans">—</code>
+            </div>
+            <div id="all-err-comment" class="err-comment" hidden></div>
+
+            <div class="tape-arena">
+              <div id="all-tape-strip" class="cell-row cell-row-center"></div>
+            </div>
+          </div>
+        </div>
+
+        <details class="term-drawer" open>
+          <summary>graph_all.svg :: D-LBA (11 estados, 27 transições)</summary>
+          <div class="drawer-body graph-panel" id="all-graph-panel">
+            <div class="graph-toolbar">
+              <span class="graph-caption">D-LBA · 11 estados (q0..q10)</span>
+              <div class="ctl-group">
+                <button type="button" class="ctl-btn" data-proxy-click="all-prev" aria-label="Passo anterior">◀</button>
+                <button type="button" class="ctl-btn is-primary" data-proxy-click="all-play">▶/⏸</button>
+                <button type="button" class="ctl-btn" data-proxy-click="all-next" aria-label="Próximo passo">▶</button>
+                <button type="button" class="ctl-btn" data-fs-target="all-graph-panel" aria-label="Alternar tela cheia do grafo do ALL">⛶ fullscreen</button>
+              </div>
+            </div>
+            <svg id="all-graph-svg" class="aut-svg" viewBox="0 0 930 530" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grafo do Autômato Linearmente Limitado com 11 estados e transições"></svg>
+          </div>
+        </details>
+
+        <details class="term-drawer">
+          <summary>trace_all.log</summary>
+          <div class="drawer-body">
+            <div tabindex="0" role="region" aria-label="Tabela de trace do ALL" class="table-wrapper">
+              <table class="shell-tbl">
+                <thead>
+                  <tr><th>#</th><th>state</th><th>head</th><th>read</th><th>tape</th><th>delta</th></tr>
+                </thead>
+                <tbody id="all-trace-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         4. ./glc — GRAMÁTICA & DERIVAÇÃO INTERATIVA
+         ====================================================================== -->
+    <section role="tabpanel" id="panel-glc" aria-labelledby="tab-glc" hidden="until-found">
+      <div class="panel-body">
+        <div class="term-window">
+          <div class="term-head">
+            <span class="term-title">cfg :: LL(1) leftmost derivation</span>
+            <div class="ctl-group">
+              <button type="button" class="ctl-btn" id="glc-prev" aria-label="Passo anterior">◀</button>
+              <button type="button" class="ctl-btn is-primary" id="glc-play">▶ play</button>
+              <button type="button" class="ctl-btn" id="glc-next" aria-label="Próximo passo">▶</button>
+              <button type="button" class="ctl-btn" id="glc-end" aria-label="Ir ao fim">⏭</button>
+              <span id="glc-counter" class="step-pill">0/0</span>
+            </div>
+          </div>
+
+          <div class="viz-body">
+            <div class="deriv-hero">
+              <div class="sub-label" id="glc-rule-caption">start_symbol</div>
+              <div id="glc-sentential" class="sentential-out">S</div>
+            </div>
+            <div id="glc-prods" class="prod-chips"></div>
+          </div>
+        </div>
+
+        <details class="term-drawer">
+          <summary>derivation_steps.log</summary>
+          <div class="drawer-body">
+            <div id="glc-history" class="deriv-list"></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         5. ./suite — BATERIA OFICIAL (50 CASOS)
+         ====================================================================== -->
+    <section role="tabpanel" id="panel-suite" aria-labelledby="tab-suite" hidden="until-found">
+      <div class="panel-body">
+        <div class="term-window">
+          <div class="term-head">
+            <span class="term-title" id="suite-summary-line">pytest + 50 official rubric cases</span>
+            <button type="button" id="reload-suite-btn" class="ctl-btn">↻ rerun</button>
+          </div>
+
+          <div class="flag-bar">
+            <span class="flag-hint">$ filter:</span>
+            <button type="button" class="flag-btn is-active" data-filter="ALL_MODS">--all (50)</button>
+            <button type="button" class="flag-btn" data-filter="AP">--ap (22)</button>
+            <button type="button" class="flag-btn" data-filter="ALL">--lba (23)</button>
+            <button type="button" class="flag-btn" data-filter="INTEGRACAO">--int (3)</button>
+            <button type="button" class="flag-btn" data-filter="ERRO_LEXICO">--lex (2)</button>
+          </div>
+
+          <div class="viz-body">
+            <div tabindex="0" role="region" aria-label="Casos oficiais da lauda" class="table-wrapper">
+              <table class="shell-tbl">
+                <thead>
+                  <tr><th>id</th><th>mod</th><th>len</th><th>input</th><th>exp</th><th>got</th><th>rule</th><th></th></tr>
+                </thead>
+                <tbody id="suite-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         6. ./specs — TABELAS FORMAIS EM JANELAS COLAPSÁVEIS
+         ====================================================================== -->
+    <section role="tabpanel" id="panel-specs" aria-labelledby="tab-specs" hidden="until-found">
+      <div class="panel-body">
+        <div class="drawer-stack">
+          <details class="term-drawer" open>
+            <summary>glc.spec :: G = (V, T, P, S) — 9 produções</summary>
+            <div class="drawer-body"><pre id="spec-glc-pre" class="diag-pre"></pre></div>
+          </details>
+          <details class="term-drawer">
+            <summary>ap.delta :: DPDA — 9 estados (q0..q8), 20 transições</summary>
+            <div class="drawer-body">
+              <div class="graph-panel graph-panel-boxed" id="spec-ap-panel">
+                <div class="graph-toolbar">
+                  <span class="graph-caption">graph_ap.svg</span>
+                  <button type="button" class="ctl-btn" data-fs-target="spec-ap-panel">⛶ fullscreen</button>
+                </div>
+                <svg id="spec-ap-svg" class="aut-svg" viewBox="0 0 920 348" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grafo formal do AP"></svg>
+              </div>
+              <pre id="spec-ap-pre" class="diag-pre"></pre>
+            </div>
+          </details>
+          <details class="term-drawer">
+            <summary>all.delta :: D-LBA — 11 estados (q0..q10), 27 transições</summary>
+            <div class="drawer-body">
+              <div class="graph-panel graph-panel-boxed" id="spec-all-panel">
+                <div class="graph-toolbar">
+                  <span class="graph-caption">graph_all.svg</span>
+                  <button type="button" class="ctl-btn" data-fs-target="spec-all-panel">⛶ fullscreen</button>
+                </div>
+                <svg id="spec-all-svg" class="aut-svg" viewBox="0 0 930 530" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grafo formal do ALL"></svg>
+              </div>
+              <pre id="spec-all-pre" class="diag-pre"></pre>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         7. ./man — MANUAL TEÓRICO ENXUTO EM JANELAS COLAPSÁVEIS
+         ====================================================================== -->
+    <section role="tabpanel" id="panel-man" aria-labelledby="tab-man" hidden="until-found">
+      <div class="panel-body">
+        <div class="drawer-stack">
+          <details class="term-drawer" open>
+            <summary>01 :: chomsky_hierarchy</summary>
+            <div class="drawer-body">
+              <pre class="diag-pre">[Tipo 3 · AV1]  MiniLexer     ER + AFNε de Thompson     → tokenização e erros léxicos (135 testes)
+[Tipo 2 · AV2]  MiniParser    GLC LL(1) + AP (9 est.)   → escopos {...} e expressões (...) balanceados
+[Tipo 1 · AV2]  MiniSemantic  LSC + ALL (11 est.)       → aridade e ordem posicional w:w em fita limitada</pre>
+            </div>
+          </details>
+
+          <details class="term-drawer">
+            <summary>02 :: minilang_to_formal_map</summary>
+            <div class="drawer-body">
+              <pre class="diag-pre">program nome  → p     { ... }      → { }     ( ... )        → ( )
+fn f(...)     → #     int / 10     → i       string / "ok"  → s
+f(...)        → :     ;            → ;       bordas ALL     → &lt; ... &gt;
+
+Nota: o modo 'minilang' faz apenas projeção mecânica via MiniLexer (AV1),
+sem checar balanceamento nem igualdade de tipos. 100% da decisão ocorre em
+δ_AP e δ_ALL (testável diretamente sem front-end no modo 'raw').</pre>
+            </div>
+          </details>
+
+          <details class="term-drawer">
+            <summary>03 :: pumping_lemma_proofs</summary>
+            <div class="drawer-body">
+              <pre class="diag-pre">L₁ ∉ Regular (z = p{(ᵖ)ᵖ}#i:i;):
+  |xy| ≤ p ⇒ y ⊆ p{(ᵖ⁻² ⇒ xy²z duplica 'p' ou desbalanceia '{'/'('. Contradição.
+
+L₂ ∉ LLC (z = iᵖsᵖ:iᵖsᵖ):
+  |vwx| ≤ p ⇒ se fica de um lado quebra tamanho; se cruza ':' só atinge sᵖ à esq. e iᵖ à dir.
+  Logo uv²wx²y não pode preservar w = u. Como há D-LBA em espaço n+2, L₂ ∈ LSC \ LLC.</pre>
+            </div>
+          </details>
+
+          <details class="term-drawer">
+            <summary>04 :: determinism_halting_and_tape_bounds</summary>
+            <div class="drawer-body">
+              <pre class="diag-pre">Determinismo : 0 estados não-determinísticos (confirmado pelo JFLAP 7.1 PDANondeterminismDetector).
+Parada AP    : toda transição consome 1 símbolo, exceto (q2, ε, Z) → (q3, Z) (1x) ⇒ ≤ n + 1 passos O(n).
+Parada ALL   : cada ciclo marca irreversivelmente 1 par {i,s} → {I,S} ⇒ ≤ ⌊n/2⌋ ciclos ⇒ O(n²).
+Bordas ALL   : apenas (q0,&lt;) move R e apenas (q9,&gt;) move L; nunca sobrescreve nem cruza bordas.</pre>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

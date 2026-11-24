@@ -1,0 +1,40 @@
+\chapter{Etapa 2 --- Linguagem Sensível ao Contexto e Autômato Linearmente Limitado}
+
+\section{Especificação Formal do ALL ($M_{\text{ALL}}$ --- 11 estados)}
+
+Quando o AP aceita a cadeia de entrada, o pipeline extrai a fatia semântica $x = w\texttt{:}u$ delimitada entre \texttt{\#} e \texttt{;} e a posiciona sobre a fita limitada do ALL $M_{\text{ALL}} = (Q_{\text{ALL}}, \Sigma_{\text{ALL}}, \Gamma_{\text{ALL}}, \texttt{<}, \texttt{>}, \delta_{\text{ALL}}, q_0, F_{\text{ALL}})$:
+
+\begin{itemize}
+    \item \textbf{Estados (11 estados $\ge 8$):} $Q_{\text{ALL}} = \{q_0, q_1, q_2, q_3, q_4, q_5, q_6, q_7, q_8, q_9, q_{10}\}$, com $F_{\text{ALL}} = \{q_{10}\}$;
+    \item \textbf{Alfabeto de entrada:} $\Sigma_{\text{ALL}} = \{\texttt{i}, \texttt{s}, \texttt{:}\}$;
+    \item \textbf{Alfabeto da fita:} $\Gamma_{\text{ALL}} = \{\texttt{<}, \texttt{>}, \texttt{i}, \texttt{s}, \texttt{:}, \texttt{I}, \texttt{S}\}$;
+    \item \textbf{Fita estritamente limitada:} para $|x| = n$, a fita possui exatamente $n$ células graváveis (índices $1 \dots n$) e dois marcadores de borda fixos: \texttt{<} na célula $0$ e \texttt{>} na célula $n+1$;
+    \item \textbf{Configuração inicial:} estado $q_0$, fita $\texttt{<} x \texttt{>}$, cabeçote na posição $0$ (compatível com o simulador de MT do JFLAP 7.1);
+    \item \textbf{Aceitação e rejeição:} aceita ao atingir o estado final $q_{10}$ (sem transições de saída); rejeita ao parar em qualquer estado $q \notin F_{\text{ALL}}$ sem transição aplicável.
+\end{itemize}
+
+\begin{table}[ht]
+\centering
+\caption{Função de transição $\delta_{\text{ALL}}(q, X) = (q', Y, D)$ do D-LBA de 11 estados.}
+\small
+\begin{tabular}{@{}llllll@{}}
+\toprule
+Estado & Lê & Destino & Escreve & Mov. & Papel semântico \\
+\midrule
+$q_0$ & \texttt{<} & $q_1$ & \texttt{<} & R & Valida borda esquerda e entra na célula 1 \\
+$q_1$ & \texttt{i} / \texttt{s} & $q_2$ / $q_3$ & \texttt{I} / \texttt{S} & R & Exige assinatura não vazia e marca 1º tipo \\
+$q_2$ & \texttt{i}, \texttt{s} / \texttt{:} & $q_2$ / $q_4$ & mesmo & R & Transporta \texttt{i} até o lado direito \\
+$q_3$ & \texttt{i}, \texttt{s} / \texttt{:} & $q_3$ / $q_5$ & mesmo & R & Transporta \texttt{s} até o lado direito \\
+$q_4$ & \texttt{I}, \texttt{S} / \texttt{i} & $q_4$ / $q_6$ & mesmo / \texttt{I} & R / L & Pula já casados e casa \texttt{i} $\to$ \texttt{I} \\
+$q_5$ & \texttt{I}, \texttt{S} / \texttt{s} & $q_5$ / $q_6$ & mesmo / \texttt{S} & R / L & Pula já casados e casa \texttt{s} $\to$ \texttt{S} \\
+$q_6$ & \texttt{I}, \texttt{S} / \texttt{:} & $q_6$ / $q_7$ & mesmo & L & Retorna à esquerda até o separador \texttt{:} \\
+$q_7$ & \texttt{i}, \texttt{s} / \texttt{I}, \texttt{S} & $q_7$ / $q_8$ & mesmo & L / R & Retorna até a fronteira marcada e avança 1 \\
+$q_8$ & \texttt{i} / \texttt{s} / \texttt{:} & $q_2$ / $q_3$ / $q_9$ & \texttt{I} / \texttt{S} / \texttt{:} & R & Marca próximo tipo ou inicia varredura final \\
+$q_9$ & \texttt{I}, \texttt{S} / \texttt{>} & $q_9$ / $q_{10}$ & mesmo & R / L & Confirma ausência de sobras até \texttt{>} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Garantia de Respeito aos Limites da Fita}
+
+Em nenhuma transição do ALL o símbolo \texttt{<} ou \texttt{>} é sobrescrito, tampouco algum símbolo interno é substituído por marcador de borda. A única transição sobre \texttt{<} é $\delta(q_0, \texttt{<}) = (q_1, \texttt{<}, R)$ (move para dentro da fita) e a única transição sobre \texttt{>} é $\delta(q_9, \texttt{>}) = (q_{10}, \texttt{>}, L)$ (retorna para a célula $n$ e aceita). No retorno à esquerda em $q_7$, existe sempre ao menos um símbolo já marcado (\texttt{I} ou \texttt{S}) à direita de \texttt{<}, garantindo que o cabeçote reverte para $q_8$ antes de sequer alcançar a borda esquerda. No simulador em Python (\texttt{src/av2/all\_lba.py}) e no harness Java do JFLAP (\texttt{tests/JflapAv2RuntimeCheck.java}), asserções em tempo de execução confirmam em cada passo que $0 \le \text{cabeçote} \le n + 1$ e que \texttt{<} e \texttt{>} permanecem intactos.

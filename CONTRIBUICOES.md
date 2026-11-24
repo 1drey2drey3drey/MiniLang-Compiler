@@ -1,23 +1,21 @@
-# Registro de contribuições
+# Registro de Contribuições
 
-Este arquivo registra as frentes de trabalho do projeto MiniLang / MiniLexer e a participação de cada integrante da equipe.
+Este arquivo registra a divisão técnica de responsabilidades da equipe **CC6NA** no projeto **MiniLang-Compiler** (AV1 + AV2).
 
-| Integrante | Contribuições registradas |
-|---|---|
-| Andrey Lourival Andrade Garcia | Especificação da MiniLang (`MiniLang_Guia_Projeto.md`); construção e validação dos AFNε de Thompson; implementação do simulador de AFNε; implementação do MiniLexer e da interface de linha de comando; testes unitários e integrados; validação estrutural e validação AFNε × regex; diagramas JFLAP e Mermaid; exemplos `.min`; README, fichas explicativas das ERs (`docs/explicacoes/`) e roteiro de comandos da apresentação. |
-| Igor Cecim Vilhena | Definição e formalização das Expressões Regulares (alfabetos, linguagens, notação formal e sintaxe Python); relatório técnico; slides da apresentação. |
+## Atividade Prática AV2 (GLC + AP e LSC + ALL)
 
-## Frentes de trabalho do projeto
+| Integrante | Contribuições na AV2 |
+| :--- | :--- |
+| **Andrey Lourival Andrade Garcia** | Evolução da especificação `MiniLang` (`MiniLang_AV2_Guia_Projeto.md`); definição formal e implementação do núcleo em Python (`spec.py`, `glc.py`, `ap.py`, `all_lba.py`, `pipeline.py`); construção da CLI e da Interface Web Interativa (`cli.py`, `web.py`, `static/`); geração e validação estrutural/runtime dos arquivos JFLAP (`glc.jff`, `ap.jff`, `all.jff`, `JflapAv2RuntimeCheck.java`); suíte automatizada `pytest` e README. |
+| **Igor Cecim Vilhena** | Pesquisa bibliográfica e fundamentação formal das provas na Hierarquia de Chomsky (Lema do Bombeamento para $L_1$ e $L_2$); revisão das derivações passo a passo da GLC e da matriz de casos de teste (aceitas, rejeitadas, casos-limite, integração e erro léxico); elaboração e revisão do relatório técnico (`docs/relatorio_av2/`); elaboração dos slides de apresentação (`docs/apresentacao_av2/`) e análise de limitações observadas. |
 
-- especificação da MiniLang e Expressões Regulares;
-- construção e validação dos AFNε;
-- implementação do simulador;
-- implementação do MiniLexer;
-- testes unitários e integrados;
-- validação estrutural e validação AFNε × regex;
-- diagramas JFLAP e Mermaid;
-- documentação e README;
-- relatório técnico;
-- apresentação e demonstração.
+> A demonstração ao vivo (15 minutos) e a arguição individual são realizadas por **ambos os integrantes**, com domínio compartilhado sobre GLC, AP, ALL, fita limitada e casos de teste.
 
-A apresentação e a demonstração são realizadas por todos os integrantes.
+---
+
+## Histórico Preservado — Atividade Prática AV1 (MiniLexer)
+
+| Integrante | Contribuições na AV1 |
+| :--- | :--- |
+| **Andrey Lourival Andrade Garcia** | Especificação da MiniLang (`MiniLang_Guia_Projeto.md`); construção e validação dos AFNε de Thompson; implementação do simulador de AFNε e do MiniLexer; testes unitários/integrados; diagramas JFLAP e Mermaid; README e roteiro de comandos. |
+| **Igor Cecim Vilhena** | Definição e formalização das Expressões Regulares (alfabetos, linguagens, notação formal e sintaxe Python); relatório técnico; slides da apresentação. |

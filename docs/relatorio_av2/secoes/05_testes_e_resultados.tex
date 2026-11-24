@@ -1,0 +1,95 @@
+\chapter{Testes Obrigatórios e Análise dos Resultados}
+
+Todos os testes exigidos pela atividade~\cite{atividade} foram executados automaticamente via \texttt{pytest} (227 testes aprovados: 135 da AV1 + 92 da AV2), via CLI (\texttt{python -m src.av2.cli --suite}) e validados em runtime diretamente no simulador oficial do \texttt{JFLAP7.1.jar} (\textbf{418 casos, 0 divergências}). Além das tabelas abaixo, o ALL foi validado exaustivamente contra a especificação matemática $L_2$ em todas as \textbf{3.280 cadeias} de comprimento $0 \dots 7$ sobre $\{\texttt{i}, \texttt{s}, \texttt{:}\}$.
+
+\section{Testes Isolados do AP (10 aceitas + 10 rejeitadas + 2 casos-limite)}
+{\scriptsize
+\begin{longtable}{@{}llccp{6.4cm}@{}}
+\toprule
+ID & Entrada & Esp. & Obt. & Regra verificada \\
+\midrule
+\endhead
+AP-A01 & \texttt{p\{(())\{\}\}\#isisi:isisi;} & Aceita & Aceita & Aninhamento misto de blocos e expressões com assinatura e chamada válidas (22 chars). \\
+AP-A02 & \texttt{p\{((()))\}\#isisis:sisi;} & Aceita & Aceita & Parênteses profundamente aninhados; AP aceita mesmo com aridades diferentes (22 chars). \\
+AP-A03 & \texttt{p\{\{(\{\})\}\}\#iiisss:ssii;} & Aceita & Aceita & Escopos aninhados em 3 níveis com expressão interna e tipos variados (22 chars). \\
+AP-A04 & \texttt{p\{()()()\}\#sisisi:isii;} & Aceita & Aceita & Três expressões sequenciais no escopo principal (22 chars). \\
+AP-A05 & \texttt{p\{\{\}()\{\}\}\#iissii:siss;} & Aceita & Aceita & Combinação sequencial de sub-blocos vazios e expressão vazia (22 chars). \\
+AP-A06 & \texttt{p\{(\{()\})\}\#ssssss:iiii;} & Aceita & Aceita & Alternância estrita entre parênteses e chaves em 4 níveis de pilha (22 chars). \\
+AP-A07 & \texttt{p\{(())\{\}\}\#isisiisis:isisiisis;} & Aceita & Aceita & Cadeia completa reaproveitada na integração (cenário aceito por ambos, 30 chars). \\
+AP-A08 & \texttt{p\{(())\{\}\}\#isisiisis:isisiissi;} & Aceita & Aceita & Sintaxe correta com ordem de tipos trocada — AP aceita (cenário 3 de integração, 30 chars). \\
+AP-A09 & \texttt{p\{\{\{()\}\}\}\#is:isisiisis;} & Aceita & Aceita & Escopo triplo com assinatura curta e chamada longa (23 chars). \\
+AP-A10 & \texttt{p\{(\{\})()\}\#iiiiiiii:ss;} & Aceita & Aceita & Escopo com bloco contendo expressão seguida de expressão irmã (22 chars). \\
+AP-R01 & \texttt{p\{(())\{\}\#isisiisis:isisiisis;} & Rejeita & Rejeita & Chave '\{' do escopo principal não fechada antes de '\#' (cenário 2 de integração, 29 chars). \\
+AP-R02 & \texttt{p\{(\{)\})\}\#isisis:isisis;} & Rejeita & Rejeita & Cruzamento inválido de delimitadores: ')' tentando fechar '\{' no topo da pilha (23 chars). \\
+AP-R03 & \texttt{\{(())\{\}\}\#isisis:isisis;} & Rejeita & Rejeita & Ausência do cabeçalho obrigatório 'p' no início do programa (23 chars). \\
+AP-R04 & \texttt{p\{(())\{\}\}\}\#isisi:isisi;} & Rejeita & Rejeita & Chave '\}' excedente após o fechamento do escopo principal (23 chars). \\
+AP-R05 & \texttt{p\{(())\{\}\}isisi:isisis;} & Rejeita & Rejeita & Ausência do separador '\#' entre escopos e seção de assinatura/chamada (22 chars). \\
+AP-R06 & \texttt{p\{(())\{\}\}\#:isisisisisi;} & Rejeita & Rejeita & Bloco de assinatura vazio antes de ':' (violação de T -> iR | sR, 23 chars). \\
+AP-R07 & \texttt{p\{(())\{\}\}\#isisisisisi:;} & Rejeita & Rejeita & Bloco de chamada vazio após ':' (violação de T -> iR | sR, 23 chars). \\
+AP-R08 & \texttt{p\{(())\{\}\}\#isisis:isisis} & Rejeita & Rejeita & Ausência do terminador ';' ao final da cadeia (estado final q8 não atingido, 23 chars). \\
+AP-R09 & \texttt{p\{(())\{\}\}\#isisi:isisi;;} & Rejeita & Rejeita & Símbolo excedente ';' após o estado final q8 (entrada não pode ter sobras, 23 chars). \\
+AP-R10 & \texttt{p\{(())\{\}\}\#is:is:isisis;} & Rejeita & Rejeita & Separador ':' duplicado na seção de assinatura/chamada (23 chars). \\
+AP-L01 & \texttt{\textquotedbl\textquotedbl} & Rejeita & Rejeita & Caso-limite: cadeia vazia (rejeitada sem consumir entrada, permanece em q0). \\
+AP-L02 & \texttt{p\{\}\#i:i;} & Aceita & Aceita & Caso-limite: menor cadeia aceita pela GLC e pelo AP (8 caracteres). \\
+\bottomrule
+\end{longtable}}
+
+\section{Testes Isolados do ALL (10 aceitas + 10 rejeitadas + 3 casos-limite)}
+{\scriptsize
+\begin{longtable}{@{}llccp{6.6cm}@{}}
+\toprule
+ID & Entrada & Esp. & Obt. & Regra verificada \\
+\midrule
+\endhead
+ALL-A01 & \texttt{isisiisis:isisiisis} & Aceita & Aceita & Cópia exata de 9 parâmetros mistos (reaproveitada na integração, 19 chars). \\
+ALL-A02 & \texttt{iiiiiiiii:iiiiiiiii} & Aceita & Aceita & Nove parâmetros homogêneos do tipo 'i' (int) idênticos (19 chars). \\
+ALL-A03 & \texttt{sssssssss:sssssssss} & Aceita & Aceita & Nove parâmetros homogêneos do tipo 's' (string) idênticos (19 chars). \\
+ALL-A04 & \texttt{iiiiisssss:iiiiisssss} & Aceita & Aceita & Dois blocos contíguos (5 'i' seguidos de 5 's') espelhados diretamente (21 chars). \\
+ALL-A05 & \texttt{sssssiiiii:sssssiiiii} & Aceita & Aceita & Dois blocos contíguos (5 's' seguidos de 5 'i') idênticos (21 chars). \\
+ALL-A06 & \texttt{isisisisis:isisisisis} & Aceita & Aceita & Alternância estrita de 10 parâmetros 'is' repetida integralmente (21 chars). \\
+ALL-A07 & \texttt{siiisssiii:siiisssiii} & Aceita & Aceita & Padrão assimétrico de 10 tipos casado posição a posição (21 chars). \\
+ALL-A08 & \texttt{iisssiiis:iisssiiis} & Aceita & Aceita & Assinatura assimétrica de 9 parâmetros casada exatamente (19 chars). \\
+ALL-A09 & \texttt{sssiisssi:sssiisssi} & Aceita & Aceita & Sequência de 9 parâmetros começando por 's' e terminando em 'i' (19 chars). \\
+ALL-A10 & \texttt{isssiiisss:isssiiisss} & Aceita & Aceita & Sequência simétrica de 10 parâmetros validada em fita limitada (21 chars). \\
+ALL-R01 & \texttt{isisiisis:isisiissi} & Rejeita & Rejeita & Erro de ordem posicional nos 2 últimos tipos ('is' vs 'si'); mesmas quantidades (19 chars). \\
+ALL-R02 & \texttt{isisiisis:isisiisisi} & Rejeita & Rejeita & Erro de aridade: chamada possui 1 argumento excedente após casar assinatura (20 chars). \\
+ALL-R03 & \texttt{isisiisisi:isisiisis} & Rejeita & Rejeita & Erro de aridade: chamada possui 1 argumento a menos do que a assinatura (20 chars). \\
+ALL-R04 & \texttt{iiiiiiiii:iiiiiiiis} & Rejeita & Rejeita & Erro de tipo na última posição ('i' esperado, 's' encontrado, 19 chars). \\
+ALL-R05 & \texttt{sssssssss:issssssss} & Rejeita & Rejeita & Erro de tipo logo na 1ª posição ('s' esperado, 'i' encontrado, 19 chars). \\
+ALL-R06 & \texttt{iiiiisssss:sssssiiiii} & Rejeita & Rejeita & Erro de ordem: exatamente 5 'i' e 5 's' de cada lado, porém invertidos (21 chars). \\
+ALL-R07 & \texttt{isisiisisisisiisis} & Rejeita & Rejeita & Ausência do separador ':' na fita (cabeçote atinge '>' em q2/q3, 18 chars). \\
+ALL-R08 & \texttt{isisi:isisi:isisii} & Rejeita & Rejeita & Presença de dois separadores ':' na fita (rejeitado na varredura final q9, 18 chars). \\
+ALL-R09 & \texttt{:isisiisisisisiisi} & Rejeita & Rejeita & Assinatura vazia antes do separador ':' (rejeitado imediatamente em q1, 18 chars). \\
+ALL-R10 & \texttt{isisiisisisisiisi:} & Rejeita & Rejeita & Chamada vazia após o separador ':' (rejeitado ao encontrar '>' em q4/q5, 18 chars). \\
+ALL-L01 & \texttt{\textquotedbl\textquotedbl} & Rejeita & Rejeita & Caso-limite: cadeia vazia (fita '<>', rejeitada imediatamente em q1 sem cruzar bordas). \\
+ALL-L02 & \texttt{:} & Rejeita & Rejeita & Caso-limite: apenas o separador ':' sem tipos em nenhum lado (fita '<:>'). \\
+ALL-L03 & \texttt{i:i} & Aceita & Aceita & Caso-limite: menor cadeia aceita pelo ALL (3 células graváveis + 2 marcadores fixos). \\
+\bottomrule
+\end{longtable}}
+
+\section{Testes de Integração (Fluxo Completo AP $\to$ ALL)}
+{\scriptsize
+\begin{longtable}{@{}llccp{5.4cm}@{}}
+\toprule
+ID & Entrada & Esp. & Obt. (Parada) & Regra verificada \\
+\midrule
+\endhead
+INT-01 & \texttt{p\{(())\{\}\}\#isisiisis:isisiisis;} & Aceita & Aceita (CONCLUIDO) & Cenário 1: AP aceita a estrutura sintática e ALL aceita a assinatura/chamada idêntica. \\
+INT-02 & \texttt{p\{(())\{\}\#isisiisis:isisiisis;} & Rejeita & Rejeita (AP) & Cenário 2: AP rejeita por '\{' não fechado; ALL não é executado. \\
+INT-03 & \texttt{p\{(())\{\}\}\#isisiisis:isisiissi;} & Rejeita & Rejeita (ALL) & Cenário 3: AP aceita a sintaxe, mas ALL rejeita pela troca posicional dos tipos finais. \\
+\bottomrule
+\end{longtable}}
+
+\section{Testes com Símbolo Fora do Alfabeto (Erro Léxico)}
+\begin{itemize}
+    \item \textbf{LEX-01} --- Entrada: \texttt{p\{(())\{\}\}\#isisi@isisi;}. Mensagem exibida: \texttt{Erro léxico (AP): símbolo inválido '@' na posição 15. Alfabeto aceito Σ\_AP = \{p, \{, \}, (, ), \#, i, s, :, ;\}.}
+    \item \textbf{LEX-02} --- Entrada: \texttt{isisiisis\$isisiisis}. Mensagem exibida: \texttt{Erro léxico (ALL): símbolo inválido '\$' na posição 9. Alfabeto aceito Σ\_ALL = \{i, s, :\}.}
+\end{itemize}
+
+\section{Validação Cruzada no JFLAP 7.1}
+O script \texttt{tests/validate\_av2\_jflap\_runtime.py} executa \texttt{glc.jff}, \texttt{ap.jff} e \texttt{all.jff} diretamente sobre o \texttt{JFLAP7.1.jar}, confirmando:
+\begin{itemize}
+    \item \texttt{glc.jff}: 9 produções carregadas sem erro pelo \texttt{XMLCodec};
+    \item \texttt{ap.jff}: 9 estados, \textbf{0 estados não-determinísticos} (via \texttt{PDANondeterminismDetector}), 34 casos, \textbf{0 divergências};
+    \item \texttt{all.jff}: 11 estados, 384 casos (oficiais + enumeração completa até tamanho 5), com asserção de limites de fita no \texttt{TMSimulator}, \textbf{0 divergências}.
+\end{itemize}

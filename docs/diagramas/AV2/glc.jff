@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<structure>
+	<type>grammar</type>
+	<production>
+		<left>S</left>
+		<right>p{B}#T:T;</right>
+	</production>
+	<production>
+		<left>B</left>
+		<right>{B}B</right>
+	</production>
+	<production>
+		<left>B</left>
+		<right>(B)B</right>
+	</production>
+	<production>
+		<left>B</left>
+		<right />
+	</production>
+	<production>
+		<left>T</left>
+		<right>iR</right>
+	</production>
+	<production>
+		<left>T</left>
+		<right>sR</right>
+	</production>
+	<production>
+		<left>R</left>
+		<right>iR</right>
+	</production>
+	<production>
+		<left>R</left>
+		<right>sR</right>
+	</production>
+	<production>
+		<left>R</left>
+		<right />
+	</production>
+</structure>

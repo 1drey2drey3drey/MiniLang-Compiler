@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<structure>
+	<type>turing</type>
+	<automaton>
+		<state id="0" name="q0">
+			<x>70.0</x>
+			<y>260.0</y>
+			<label>Lê marcador de borda esquerdo '&lt;' e entra na 1ª célula gravável</label>
+			<initial />
+		</state>
+		<state id="1" name="q1">
+			<x>190.0</x>
+			<y>260.0</y>
+			<label>Exige 1º tipo na assinatura ('i'→'I' ou 's'→'S')</label>
+		</state>
+		<state id="2" name="q2">
+			<x>360.0</x>
+			<y>140.0</y>
+			<label>Carrega tipo 'i' pela assinatura até alcançar ':'</label>
+		</state>
+		<state id="3" name="q3">
+			<x>360.0</x>
+			<y>380.0</y>
+			<label>Carrega tipo 's' pela assinatura até alcançar ':'</label>
+		</state>
+		<state id="4" name="q4">
+			<x>560.0</x>
+			<y>140.0</y>
+			<label>Busca o próximo tipo livre na chamada e exige 'i' ('i'→'I')</label>
+		</state>
+		<state id="5" name="q5">
+			<x>560.0</x>
+			<y>380.0</y>
+			<label>Busca o próximo tipo livre na chamada e exige 's' ('s'→'S')</label>
+		</state>
+		<state id="6" name="q6">
+			<x>740.0</x>
+			<y>260.0</y>
+			<label>Retorna à esquerda pela chamada já marcada até ':'</label>
+		</state>
+		<state id="7" name="q7">
+			<x>560.0</x>
+			<y>260.0</y>
+			<label>Retorna à esquerda pela assinatura até a fronteira já marcada ('I'/'S')</label>
+		</state>
+		<state id="8" name="q8">
+			<x>360.0</x>
+			<y>260.0</y>
+			<label>Lê próximo tipo da assinatura ou, em ':', inicia varredura final</label>
+		</state>
+		<state id="9" name="q9">
+			<x>360.0</x>
+			<y>500.0</y>
+			<label>Varredura final na chamada: confirma ausência de sobras até '&gt;'</label>
+		</state>
+		<state id="10" name="q10">
+			<x>560.0</x>
+			<y>500.0</y>
+			<label>Estado final — aridade e ordem posicional de tipos 100% compatíveis</label>
+			<final />
+		</state>
+		<transition>
+			<from>0</from>
+			<to>1</to>
+			<read>&lt;</read>
+			<write>&lt;</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>1</from>
+			<to>2</to>
+			<read>i</read>
+			<write>I</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>1</from>
+			<to>3</to>
+			<read>s</read>
+			<write>S</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>2</from>
+			<to>2</to>
+			<read>i</read>
+			<write>i</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>2</from>
+			<to>2</to>
+			<read>s</read>
+			<write>s</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>2</from>
+			<to>4</to>
+			<read>:</read>
+			<write>:</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>3</from>
+			<to>3</to>
+			<read>i</read>
+			<write>i</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>3</from>
+			<to>3</to>
+			<read>s</read>
+			<write>s</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>3</from>
+			<to>5</to>
+			<read>:</read>
+			<write>:</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>4</from>
+			<to>4</to>
+			<read>I</read>
+			<write>I</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>4</from>
+			<to>4</to>
+			<read>S</read>
+			<write>S</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>4</from>
+			<to>6</to>
+			<read>i</read>
+			<write>I</write>
+			<move>L</move>
+		</transition>
+		<transition>
+			<from>5</from>
+			<to>5</to>
+			<read>I</read>
+			<write>I</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>5</from>
+			<to>5</to>
+			<read>S</read>
+			<write>S</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>5</from>
+			<to>6</to>
+			<read>s</read>
+			<write>S</write>
+			<move>L</move>
+		</transition>
+		<transition>
+			<from>6</from>
+			<to>6</to>
+			<read>I</read>
+			<write>I</write>
+			<move>L</move>
+		</transition>
+		<transition>
+			<from>6</from>
+			<to>6</to>
+			<read>S</read>
+			<write>S</write>
+			<move>L</move>
+		</transition>
+		<transition>
+			<from>6</from>
+			<to>7</to>
+			<read>:</read>
+			<write>:</write>
+			<move>L</move>
+		</transition>
+		<transition>
+			<from>7</from>
+			<to>7</to>
+			<read>i</read>
+			<write>i</write>
+			<move>L</move>
+		</transition>
+		<transition>
+			<from>7</from>
+			<to>7</to>
+			<read>s</read>
+			<write>s</write>
+			<move>L</move>
+		</transition>
+		<transition>
+			<from>7</from>
+			<to>8</to>
+			<read>I</read>
+			<write>I</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>7</from>
+			<to>8</to>
+			<read>S</read>
+			<write>S</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>8</from>
+			<to>2</to>
+			<read>i</read>
+			<write>I</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>8</from>
+			<to>3</to>
+			<read>s</read>
+			<write>S</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>8</from>
+			<to>9</to>
+			<read>:</read>
+			<write>:</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>9</from>
+			<to>9</to>
+			<read>I</read>
+			<write>I</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>9</from>
+			<to>9</to>
+			<read>S</read>
+			<write>S</write>
+			<move>R</move>
+		</transition>
+		<transition>
+			<from>9</from>
+			<to>10</to>
+			<read>&gt;</read>
+			<write>&gt;</write>
+			<move>L</move>
+		</transition>
+	</automaton>
+</structure>

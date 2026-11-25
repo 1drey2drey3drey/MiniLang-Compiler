@@ -2,7 +2,7 @@
 
 ```mermaid
 stateDiagram-v2
-    direction LR
+    direction TB
     [*] --> q0
     q0 --> q1: "< -> <, R"
     q1 --> q2: "i -> I, R"

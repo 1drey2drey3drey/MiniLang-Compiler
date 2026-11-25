@@ -227,7 +227,7 @@ def build_ap_mermaid_md() -> str:
         "",
         "```mermaid",
         "stateDiagram-v2",
-        "    direction LR",
+        "    direction TB",
         "    [*] --> q0",
         '    q0 --> q1: "p, Z / Z"',
         '    q1 --> q2: "{, Z / {Z"',
@@ -261,7 +261,7 @@ def build_all_mermaid_md() -> str:
         "",
         "```mermaid",
         "stateDiagram-v2",
-        "    direction LR",
+        "    direction TB",
         "    [*] --> q0",
         '    q0 --> q1: "< -> <, R"',
         '    q1 --> q2: "i -> I, R"',
@@ -300,7 +300,7 @@ def build_architecture_mermaid_md() -> str:
     return (
         "# Arquitetura do Pipeline em Duas Etapas — MiniLang-Compiler (AV2)\n\n"
         "```mermaid\n"
-        "flowchart LR\n"
+        "flowchart TD\n"
         '    A["Entrada formal (Σ_AP)"] --> B{"Validação de Alfabeto"}\n'
         '    B -- "Símbolo inválido" --> E1["Rejeição Léxica"]\n'
         '    B -- "Válido" --> C["Etapa 1: AP (DPDA, 9 estados)\\nGLC LL(1) + Pilha"]\n'

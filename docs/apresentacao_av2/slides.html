@@ -3,447 +3,1168 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Slides — MiniLang-Compiler (AV2 de LFA)</title>
+  <title>MiniLang-Compiler (AV2) — Apresentação Didática LFA</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
+      color-scheme: dark;
+      --bg: #080d14;
+      --surface: #0f1724;
+      --inset: #131f30;
+      --border: #213247;
       --text: #f1f5f9;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      --ok: #4ade80;
-      --err: #f87171;
-      --warn: #fbbf24;
-      --mono: "Cascadia Code", Consolas, monospace;
+      --sub: #cbd5e1;
+      --muted: #8aa0b8;
+      --green: #22c55e;
+      --green-soft: rgb(34 197 94 / 0.14);
+      --cyan: #38bdf8;
+      --cyan-soft: rgb(56 189 248 / 0.13);
+      --amber: #fbbf24;
+      --amber-soft: rgb(251 191 36 / 0.14);
+      --red: #fb7185;
+      --red-soft: rgb(251 113 133 / 0.15);
+      --violet: #c084fc;
+      --violet-soft: rgb(192 132 252 / 0.14);
+      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: #020617;
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0;
+      background: #03060a;
       color: var(--text);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
     }
-    .hud {
-      position: fixed;
-      bottom: 14px;
-      right: 18px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      z-index: 100;
-      background: rgba(15, 23, 42, 0.9);
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid #334155;
-      font-size: 13px;
+
+    /* ===== STAGE ===== */
+    body.present-mode {
+      overflow: hidden; width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
     }
-    .hud button {
-      background: #1e293b;
-      color: var(--text);
-      border: 1px solid #475569;
-      border-radius: 6px;
-      padding: 4px 10px;
-      cursor: pointer;
-    }
+    body.present-mode .deck { position: relative; width: 1280px; height: 720px; transform-origin: center center; }
+    body.present-mode .slide { display: none; margin: 0; box-shadow: 0 28px 90px rgb(0 0 0 / 0.75), 0 0 0 1px var(--border); }
+    body.present-mode .slide.is-current { display: flex; }
+
+    body.overview-mode { padding: 28px 0 80px; }
+    body.overview-mode .deck { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+    body.overview-mode .slide { box-shadow: 0 16px 48px rgb(0 0 0 / 0.65), 0 0 0 1px var(--border); }
+
+    /* ===== SLIDE CANVAS: EXACT 16:9 (1280x720) ===== */
     .slide {
-      width: min(1180px, 96vw);
-      min-height: 660px;
-      margin: 24px auto;
-      padding: 48px 56px;
+      width: 1280px; height: 720px;
       background: var(--bg);
-      border: 1px solid #334155;
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      page-break-after: always;
+      padding: 34px 50px 24px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden;
+      break-after: page; page-break-after: always;
     }
-    .slide-kicker {
-      color: var(--accent);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 0.85rem;
-      margin-bottom: 8px;
+
+    /* ===== HEADER ===== */
+    .ae-head { display: flex; flex-direction: column; gap: 6px; padding-bottom: 13px; border-bottom: 1px solid var(--border); }
+    .ae-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--mono); font-size: 12.5px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--cyan);
     }
-    h1 { font-size: 2.5rem; margin: 0 0 12px; line-height: 1.15; }
-    h2 { font-size: 1.85rem; margin: 0 0 18px; color: #ffffff; }
-    p, li { font-size: 1.12rem; line-height: 1.55; color: #e2e8f0; }
+    .ae-meta.amber { color: var(--amber); }
+    .ae-meta.green { color: var(--green); }
+    .ae-meta.violet { color: var(--violet); }
+    .ae-num { color: var(--muted); font-weight: 600; }
+
+    h1 { margin: 0; font-size: 56px; line-height: 1.06; letter-spacing: -0.025em; font-weight: 800; color: #ffffff; }
+    h2.assertion { margin: 0; font-size: 28px; line-height: 1.22; letter-spacing: -0.015em; font-weight: 700; color: #ffffff; }
+    h2.assertion .hi-c { color: var(--cyan); }
+    h2.assertion .hi-a { color: var(--amber); }
+    h2.assertion .hi-g { color: var(--green); }
+
+    .ae-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 14px 0 8px; min-height: 0; }
+    .ae-foot { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); padding-top: 8px; }
+    code, .mono { font-family: var(--mono); }
+
+    /* ===== TAGS, PANELS & BULLET POINTS ===== */
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px;
+      font-family: var(--mono); font-size: 12.5px; font-weight: 700; white-space: nowrap;
+      border: 1px solid var(--border); background: var(--surface); color: var(--sub);
+    }
+    .tag.cyan { color: var(--cyan); border-color: rgb(56 189 248 / 0.45); background: var(--cyan-soft); }
+    .tag.amber { color: var(--amber); border-color: rgb(251 191 36 / 0.45); background: var(--amber-soft); }
+    .tag.green { color: var(--green); border-color: rgb(34 197 94 / 0.45); background: var(--green-soft); }
+    .tag.red { color: var(--red); border-color: rgb(251 113 133 / 0.45); background: var(--red-soft); }
+    .tag.violet { color: var(--violet); border-color: rgb(192 132 252 / 0.45); background: var(--violet-soft); }
+
+    .panel {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;
+    }
+    .panel.top-c { border-top: 4px solid var(--cyan); }
+    .panel.top-a { border-top: 4px solid var(--amber); }
+    .panel.top-g { border-top: 4px solid var(--green); }
+    .panel.top-v { border-top: 4px solid var(--violet); }
+    .panel.left-c { border-left: 5px solid var(--cyan); }
+    .panel.left-a { border-left: 5px solid var(--amber); }
+    .panel.left-g { border-left: 5px solid var(--green); }
+    .panel.left-r { border-left: 5px solid var(--red); }
+
+    .panel-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .panel-h strong { font-size: 19px; color: #ffffff; }
+
+    /* Crisp didactic bullet points */
+    .pts {
+      margin: 0; padding: 0; list-style: none;
+      display: flex; flex-direction: column; gap: 14px;
+      font-size: 17.5px; line-height: 1.45; color: var(--sub);
+    }
+    .pts li { position: relative; padding-left: 22px; }
+    .pts li::before {
+      content: "●";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--cyan);
+      font-size: 11px;
+      line-height: 25px;
+    }
+    .pts.green li::before { color: var(--green); }
+    .pts.amber li::before { color: var(--amber); }
+    .pts.violet li::before { color: var(--violet); }
+    .pts strong { color: #ffffff; }
+    .pts code { color: #e2e8f0; background: rgb(255 255 255 / 0.06); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    .pts.compact { gap: 10px; font-size: 16px; }
+
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
     .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .box {
-      background: var(--card);
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 18px 22px;
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    /* ===== SLIDE 1 COVER ===== */
+    .cover-ribbon { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 14px; }
+    .rib-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px; }
+    .rib-step { font-family: var(--mono); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .rib-title { font-size: 24px; font-weight: 800; color: #ffffff; }
+    .rib-desc { font-size: 15px; color: var(--sub); }
+    .big-arrow { font-family: var(--mono); font-size: 26px; font-weight: 800; color: var(--muted); }
+
+    /* ===== CODE & MAPPING ===== */
+    .code-stage {
+      background: #050910; border: 1px solid var(--border); border-radius: 14px;
+      padding: 22px 24px; font-family: var(--mono); font-size: 18px; line-height: 1.85;
+      display: flex; flex-direction: column; justify-content: center; gap: 4px;
     }
-    .box h3 { margin: 0 0 10px; color: var(--accent); font-size: 1.15rem; }
-    code, pre { font-family: var(--mono); }
-    pre {
-      background: #020617;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 0.94rem;
-      overflow: auto;
-      margin: 8px 0;
+    .code-stage .ln { color: #475f78; margin-right: 14px; user-select: none; font-size: 14px; }
+    .code-stage .kw { color: #7dd3fc; font-weight: 700; }
+    .code-stage .hl-c { background: rgb(56 189 248 / 0.18); border: 1px solid rgb(56 189 248 / 0.45); border-radius: 5px; padding: 1px 6px; color: #e0f2fe; font-weight: 800; }
+    .code-stage .hl-a { background: rgb(251 191 36 / 0.18); border: 1px solid rgb(251 191 36 / 0.5); border-radius: 5px; padding: 1px 6px; color: #fef3c7; font-weight: 800; }
+
+    .bridge-strip {
+      background: var(--inset); border: 1px solid var(--border); border-radius: 12px;
+      padding: 13px 22px; display: flex; align-items: center; justify-content: space-between;
+      font-size: 16px; color: var(--sub);
     }
-    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-    th, td { border-bottom: 1px solid #334155; padding: 8px 10px; text-align: left; }
-    th { color: var(--accent); }
-    .ok { color: var(--ok); font-weight: 700; }
-    .err { color: var(--err); font-weight: 700; }
-    .warn { color: var(--warn); font-weight: 700; }
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--muted);
-      border-top: 1px solid #1e293b;
-      padding-top: 12px;
-      margin-top: 20px;
+    .bridge-strip code { font-size: 19px; font-weight: 800; color: #ffffff; }
+
+    /* Mini mapping table for ER / AP / ALL concept slides */
+    .map-list { display: flex; flex-direction: column; gap: 10px; flex: 1; justify-content: center; }
+    .map-row {
+      background: var(--inset); border: 1px solid var(--border); border-radius: 10px;
+      padding: 11px 16px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+      font-family: var(--mono); font-size: 15.5px;
     }
+    .map-row .m-l { color: #ffffff; font-weight: 700; }
+    .map-row .m-a { color: var(--muted); font-weight: 800; }
+    .map-row .m-r { text-align: right; font-weight: 700; }
+    .map-row.err { border-color: rgb(251 113 133 / 0.5); background: var(--red-soft); }
+
+    /* Spec pill grid for AP & ALL concept slides */
+    .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .spec-box {
+      background: var(--inset); border: 1px solid var(--border); border-radius: 10px;
+      padding: 13px 16px; display: flex; flex-direction: column; gap: 5px;
+    }
+    .spec-box span { font-size: 12.5px; font-weight: 700; text-transform: uppercase; color: var(--muted); font-family: var(--mono); }
+    .spec-box strong { font-family: var(--mono); font-size: 16.5px; color: #ffffff; }
+
+    /* ===== SLIDE 4 ANATOMY ===== */
+    .dissect-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px 26px; display: flex; flex-direction: column; gap: 18px; }
+    .dissect-row { display: flex; align-items: stretch; justify-content: center; gap: 10px; font-family: var(--mono); }
+    .d-chunk { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px 22px; border-radius: 12px; border: 2px solid var(--border); }
+    .d-chunk .sym { font-size: 28px; font-weight: 800; letter-spacing: 0.04em; }
+    .d-chunk .lbl { font-family: var(--sans); font-size: 13.5px; font-weight: 700; }
+    .d-chunk.c { background: var(--cyan-soft); border-color: var(--cyan); color: #e0f2fe; }
+    .d-chunk.c .lbl { color: var(--cyan); }
+    .d-chunk.a { background: var(--amber-soft); border-color: var(--amber); color: #fef3c7; }
+    .d-chunk.a .lbl { color: var(--amber); }
+    .d-chunk.m { background: var(--inset); border-color: var(--border); color: var(--muted); padding: 15px 15px; }
+
+    /* ===== SLIDE 5 PUMPING ===== */
+    .visual-demo {
+      background: var(--inset); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; align-items: center;
+    }
+    .tok-row { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 19px; font-weight: 800; }
+    .tok { padding: 5px 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); }
+    .tok.r { background: var(--red-soft); border-color: var(--red); color: #fecdd3; }
+    .lifo-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+    .lc-box { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; text-align: center; font-family: var(--mono); font-size: 13.5px; }
+    .lc-box strong { display: block; font-family: var(--sans); font-size: 13px; margin-bottom: 3px; }
+
+    /* ===== SLIDE 7 GLC ===== */
+    .rule-card { background: var(--inset); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; flex-direction: column; gap: 5px; }
+    .rule-lbl { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    .rule-code { font-family: var(--mono); font-size: 18px; font-weight: 700; color: #ffffff; }
+    .build-steps { display: flex; flex-direction: column; justify-content: space-between; gap: 11px; flex: 1; }
+    .b-step { background: var(--inset); border: 1px solid var(--border); border-radius: 10px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .b-step.ok { background: var(--green-soft); border-color: rgb(34 197 94 / 0.45); }
+    .b-step .b-num { font-family: var(--mono); font-size: 13px; font-weight: 800; color: var(--cyan); min-width: 80px; }
+    .b-step .b-str { font-family: var(--mono); font-size: 18px; font-weight: 700; color: #ffffff; flex: 1; }
+    .b-step .b-note { font-size: 13.5px; color: var(--sub); text-align: right; }
+
+    /* ===== SLIDE 8 STACK STORY ===== */
+    .stack-story { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; flex: 1; align-items: stretch; }
+    .st-frame { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 14px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 10px; }
+    .st-frame.final { border-color: var(--green); background: linear-gradient(180deg, var(--surface), rgb(34 197 94 / 0.08)); }
+    .st-top { text-align: center; }
+    .st-top .st-step { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .st-top .st-read { font-family: var(--mono); font-size: 20px; font-weight: 800; color: #ffffff; margin-top: 4px; }
+    .st-tower { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; flex: 1; width: 100%; }
+    .s-blk { width: 72px; height: 36px; border-radius: 8px; border: 2px solid var(--cyan); background: var(--cyan-soft); color: #ffffff; font-family: var(--mono); font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+    .s-blk.p { border-color: var(--amber); background: var(--amber-soft); color: #fef3c7; }
+    .s-blk.z { border-color: var(--green); background: var(--green-soft); color: #bbf7d0; }
+    .st-action { font-size: 14px; font-weight: 700; color: var(--sub); text-align: center; }
+
+    .err-strip {
+      background: var(--red-soft); border: 1px solid rgb(251 113 133 / 0.5); border-radius: 12px;
+      padding: 13px 22px; display: flex; align-items: center; justify-content: space-between;
+      font-size: 16.5px; color: #ffe4e6;
+    }
+    .err-strip code { font-size: 18px; font-weight: 800; color: #ffffff; }
+
+    /* ===== SLIDES 9 & 12 FULL-WIDTH SVG ===== */
+    .full-svg-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 14px 18px; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0;
+    }
+    .full-svg-card svg { width: 100%; height: 100%; max-height: 410px; display: block; }
+
+    .aut-node { fill: #0d1624; stroke: #4e6985; stroke-width: 2.2; }
+    .aut-node.init { stroke: var(--green); stroke-width: 2.5; }
+    .aut-node.c { fill: rgb(56 189 248 / 0.16); stroke: var(--cyan); stroke-width: 2.6; }
+    .aut-node.a { fill: rgb(251 191 36 / 0.14); stroke: var(--amber); stroke-width: 2.4; }
+    .aut-node.v { fill: rgb(192 132 252 / 0.14); stroke: var(--violet); stroke-width: 2.4; }
+    .aut-node.ok { fill: rgb(34 197 94 / 0.22); stroke: var(--green); stroke-width: 2.8; }
+    .aut-lbl { font-family: var(--mono); font-size: 15px; font-weight: 800; fill: #ffffff; text-anchor: middle; dominant-baseline: central; }
+    .aut-edge { fill: none; stroke: #647f9c; stroke-width: 2; }
+    .aut-edge.c { stroke: var(--cyan); stroke-width: 2.4; }
+    .aut-edge.a { stroke: var(--amber); stroke-width: 2.3; }
+    .aut-edge.v { stroke: var(--violet); stroke-width: 2.3; }
+    .aut-edge.g { stroke: var(--green); stroke-width: 2.5; }
+    .aut-elbl { font-family: var(--mono); font-size: 12.5px; font-weight: 700; fill: #dbeafe; text-anchor: middle; }
+    .aut-elbl.c { fill: #7dd3fc; }
+    .aut-elbl.a { fill: #fde68a; }
+    .aut-elbl.v { fill: #e9d5ff; }
+    .aut-elbl.g { fill: #86efac; }
+
+    .zone-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .zone-strip.four { grid-template-columns: repeat(4, 1fr); }
+    .zone-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--sub); }
+    .zone-card strong { color: #ffffff; font-family: var(--mono); }
+
+    /* ===== SLIDE 11 TAPE STORY ===== */
+    .tape-story { display: flex; flex-direction: column; gap: 14px; flex: 1; justify-content: center; }
+    .ts-row {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px 22px; display: grid; grid-template-columns: 280px 1fr 250px; align-items: center; gap: 20px;
+    }
+    .ts-row.ok { border-color: rgb(34 197 94 / 0.5); background: linear-gradient(90deg, var(--surface), rgb(34 197 94 / 0.08)); }
+    .ts-title strong { font-size: 17px; color: #ffffff; display: block; }
+    .ts-title span { font-size: 14px; color: var(--muted); }
+    .big-tape { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
+    .bt-cell {
+      height: 46px; border-radius: 8px; border: 2px solid var(--border); background: var(--inset);
+      font-family: var(--mono); font-size: 21px; font-weight: 800; color: #ffffff;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bt-cell.b { background: var(--red-soft); border-color: var(--red); color: #fecdd3; }
+    .bt-cell.mi { background: var(--cyan-soft); border-color: var(--cyan); color: #bae6fd; }
+    .bt-cell.ms { background: var(--amber-soft); border-color: var(--amber); color: #fde68a; }
+    .bt-cell.sep { color: var(--muted); background: #070c14; }
+    .bt-cell.hd { outline: 3px solid var(--green); outline-offset: 2px; box-shadow: 0 0 16px rgb(34 197 94 / 0.45); }
+    .ts-result { font-size: 15px; font-weight: 700; color: var(--sub); text-align: right; }
+
+    /* ===== SLIDE 13 KPI + LIMITATIONS ===== */
+    .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; }
+    .kpi .num { font-family: var(--mono); font-size: 42px; font-weight: 800; line-height: 1; }
+    .kpi .lbl { font-size: 16px; font-weight: 700; color: #ffffff; margin-top: 4px; }
+    .kpi .sub { font-size: 13px; color: var(--muted); }
+    .sc-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .sc-pill { background: var(--inset); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; }
+    .sc-pill strong { font-family: var(--mono); font-size: 14px; color: #ffffff; }
+    .sc-pill span { font-size: 13px; color: var(--sub); }
+    .lim-box { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--amber); border-radius: 12px; padding: 14px 18px; }
+    .lim-box strong { font-size: 17px; color: #ffffff; display: block; margin-bottom: 4px; }
+    .lim-box span { font-size: 14.5px; color: var(--sub); }
+
+    /* ===== SLIDE 14 DEMO ===== */
+    .live-box {
+      background: linear-gradient(135deg, rgb(34 197 94 / 0.14), rgb(56 189 248 / 0.12));
+      border: 1px solid rgb(34 197 94 / 0.5); border-radius: 16px;
+      padding: 22px 26px; display: flex; flex-direction: column; gap: 15px;
+    }
+    .live-grid { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 14px; }
+    .live-card { background: rgb(8 13 20 / 0.85); border: 1px solid var(--border); border-radius: 12px; padding: 15px 18px; }
+    .live-card .lc-n { font-family: var(--mono); font-size: 12.5px; font-weight: 800; color: var(--green); margin-bottom: 4px; }
+    .live-card .lc-t { font-size: 20px; font-weight: 800; color: #ffffff; margin-bottom: 4px; }
+    .live-card .lc-d { font-size: 14px; color: var(--sub); }
+
+    /* ===== HUD ===== */
+    .hud {
+      position: fixed; bottom: 14px; right: 18px; z-index: 999;
+      display: flex; align-items: center; gap: 6px; padding: 6px 10px;
+      border-radius: 999px; background: rgb(15 23 36 / 0.92); border: 1px solid var(--border);
+      font-family: var(--mono); font-size: 12px; color: var(--sub);
+    }
+    .hud button { background: var(--inset); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; font-family: var(--mono); font-size: 12px; cursor: pointer; }
+    .hud button:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    /* ===== PRINT / PDF 16:9 ===== */
+    @page { size: 1280px 720px; margin: 0; }
     @media print {
-      body { background: #ffffff; }
-      .hud { display: none; }
-      .slide {
-        width: 100%;
-        min-height: 98vh;
-        margin: 0;
-        border-radius: 0;
-        border: none;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+      html, body, body.present-mode, body.overview-mode {
+        width: 1280px; height: auto; overflow: visible !important; display: block !important;
+        padding: 0 !important; margin: 0 !important; background: var(--bg) !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
+      .hud { display: none !important; }
+      body.present-mode .deck, body.overview-mode .deck { display: block !important; width: 1280px !important; height: auto !important; transform: none !important; gap: 0 !important; }
+      body.present-mode .slide, body.overview-mode .slide, .slide {
+        display: flex !important; width: 1280px !important; height: 720px !important;
+        margin: 0 !important; box-shadow: none !important;
+        break-after: page; page-break-after: always;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .slide:last-child { break-after: auto; page-break-after: auto; }
     }
   </style>
 </head>
-<body>
-  <div class="hud">
-    <button type="button" onclick="nav(-1)">◀</button>
-    <span id="hud-pos">1 / 11</span>
-    <button type="button" onclick="nav(1)">▶</button>
-    <button type="button" onclick="window.print()">Imprimir / PDF</button>
+<body class="present-mode">
+
+  <div class="hud" aria-label="Controles">
+    <button type="button" onclick="nav(-1)" title="Anterior (←)">◀</button>
+    <span id="hud-pos">01 / 14</span>
+    <button type="button" onclick="nav(1)" title="Próximo (→)">▶</button>
+    <button type="button" onclick="toggleMode()" title="Grade (G)">G</button>
+    <button type="button" onclick="toggleFullscreen()" title="Tela cheia (F)">⛶</button>
+    <button type="button" onclick="window.print()" title="PDF">PDF</button>
   </div>
 
-  <!-- SLIDE 1 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">CESUPA • Linguagens Formais e Autômatos • AV2 (CC6NA)</div>
-      <h1>MiniLang-Compiler (AV2)</h1>
-      <p style="font-size:1.35rem; color:#94a3b8;">Validação de Programas em Duas Etapas: Autômato de Pilha (GLC) e Autômato Linearmente Limitado (LSC)</p>
-      <div class="grid2" style="margin-top:32px;">
-        <div class="box">
-          <h3>Equipe</h3>
-          <p><strong>Andrey Lourival Andrade Garcia</strong><br><strong>Igor Cecim Vilhena</strong></p>
+  <main class="deck" id="deck">
+
+    <!-- ================================================================
+         SLIDE 1 — CAPA
+         ================================================================ -->
+    <section class="slide is-current">
+      <div class="ae-head" style="border-bottom:none; padding-bottom:0;">
+        <div class="ae-meta green"><span>CESUPA · Linguagens Formais e Autômatos · AV2 (CC6NA)</span><span class="ae-num">25/11/2026</span></div>
+      </div>
+
+      <div class="ae-body" style="gap:30px;">
+        <div>
+          <h1>MiniLang-Compiler</h1>
+          <p style="margin:12px 0 0; font-size:24px; color:var(--sub); line-height:1.35;">
+            Validação de código em 3 camadas: <strong style="color:var(--green);">ER (Léxico)</strong> → <strong style="color:var(--cyan);">AP (Sintaxe)</strong> → <strong style="color:var(--amber);">ALL (Semântica)</strong>
+          </p>
         </div>
-        <div class="box">
-          <h3>Docente e Data</h3>
-          <p>Prof. Daniel Leal Souza<br>25 de novembro de 2026 • Evolução do <code>MiniLang-MiniLexer</code> (AV1)</p>
+
+        <div class="cover-ribbon">
+          <div class="rib-card" style="border-top:4px solid var(--green);">
+            <span class="rib-step" style="color:var(--green);">AV1 · Tipo 3 (Regular)</span>
+            <span class="rib-title">1. ER · MiniLexer</span>
+            <span class="rib-desc">Reconhece tokens e bloqueia símbolos inválidos</span>
+          </div>
+          <div class="big-arrow">→</div>
+          <div class="rib-card" style="border-top:4px solid var(--cyan);">
+            <span class="rib-step" style="color:var(--cyan);">AV2 · Tipo 2 (LLC)</span>
+            <span class="rib-title">2. AP · MiniParser</span>
+            <span class="rib-desc">Confere escopos aninhados (9 estados)</span>
+          </div>
+          <div class="big-arrow">→</div>
+          <div class="rib-card" style="border-top:4px solid var(--amber);">
+            <span class="rib-step" style="color:var(--amber);">AV2 · Tipo 1 (LSC)</span>
+            <span class="rib-title">3. ALL · MiniSemantic</span>
+            <span class="rib-desc">Confere tipos na ordem exata (11 estados)</span>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="panel" style="padding:16px 22px; gap:4px;">
+            <span style="font-size:13px; color:var(--muted); font-weight:700; text-transform:uppercase;">Equipe</span>
+            <span style="font-size:20px; font-weight:700; color:#fff;">Andrey Lourival Andrade Garcia &nbsp;·&nbsp; Igor Cecim Vilhena</span>
+          </div>
+          <div class="panel" style="padding:16px 22px; gap:4px;">
+            <span style="font-size:13px; color:var(--muted); font-weight:700; text-transform:uppercase;">Docente &amp; Repositório</span>
+            <span style="font-size:18px; color:var(--sub); line-height:1.45;"><strong style="color:#fff;">Prof. Daniel Leal Souza</strong><br><code style="color:var(--cyan); font-size:14px;">github.com/1drey2drey3drey/MiniLang-Compiler</code></span>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="footer"><span>MiniLang-Compiler (AV2)</span><span>Slide 1 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 2 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">1. Problema e Evolução na Hierarquia de Chomsky</div>
-      <h2>Do MiniLexer (AV1) ao MiniLang-Compiler (AV2)</h2>
-      <div class="grid3">
-        <div class="box">
-          <h3>AV1 — Léxico (Tipo 3)</h3>
-          <p>ER + AFNε de Thompson.<br>Preservado no repositório com <strong>135 testes</strong>.</p>
+      <div class="ae-foot">
+        <span>Evolução do MiniLang-MiniLexer (AV1)</span>
+        <span>01 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 2 — CONCEITO × TEMA DA AV2
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta green"><span>Conceito do Projeto × Tema da Lauda</span><span class="ae-num">02 / 14</span></div>
+        <h2 class="assertion">O MiniLang-Compiler une os 3 níveis da Hierarquia de Chomsky num único fluxo.</h2>
+      </div>
+
+      <div class="ae-body">
+        <div class="grid2" style="align-items:stretch;">
+          <div class="code-stage">
+            <div><span class="ln">1</span><span class="kw">program</span> matricula <span class="hl-c">{</span></div>
+            <div><span class="ln">2</span>  <span class="kw">if</span> <span class="hl-c">((</span>ativo<span class="hl-c">))</span> <span class="hl-c">{ }</span></div>
+            <div><span class="ln">3</span>  <span class="kw">func</span> matricular(<span class="hl-a">int, string, int</span>);</div>
+            <div><span class="ln">4</span>  matricular(<span class="hl-a">101, "ana", 2026</span>);</div>
+            <div><span class="ln">5</span><span class="hl-c">}</span></div>
+          </div>
+
+          <div class="panel top-g" style="justify-content:center;">
+            <div class="panel-h"><strong>O que o compilador verifica nesse código</strong><span class="tag green">3 camadas</span></div>
+            <ul class="pts green">
+              <li><strong>1. Léxico (ER · AV1):</strong> reconhece palavras e símbolos válidos do alfabeto.</li>
+              <li><strong>2. Sintaxe (AP · Etapa 1):</strong> garante que blocos <code style="color:var(--cyan);">{ }</code> e <code style="color:var(--cyan);">( )</code> abrem e fecham certo.</li>
+              <li><strong>3. Semântica (ALL · Etapa 2):</strong> garante que <code style="color:var(--amber);">func(int, string, int)</code> bate com <code style="color:var(--amber);">(101, "ana", 2026)</code>.</li>
+            </ul>
+          </div>
         </div>
-        <div class="box">
-          <h3>AV2 Etapa 1 — Sintático (Tipo 2)</h3>
-          <p><strong>GLC LL(1) + DPDA (9 estados)</strong>.<br>Valida escopos <code>{...}</code> e expressões <code>(...)</code> aninhados + formato <code>#w:u;</code>.</p>
-        </div>
-        <div class="box">
-          <h3>AV2 Etapa 2 — Semântico (Tipo 1)</h3>
-          <p><strong>LSC + D-LBA (11 estados)</strong>.<br>Valida aridade e ordem posicional exata de tipos: <code>w:w</code> (<code>i</code>=int, <code>s</code>=string).</p>
+
+        <div class="bridge-strip">
+          <span><strong>Saída da camada léxica para os autômatos da AV2:</strong></span>
+          <code><span style="color:var(--cyan);">p{(()){}}</span>#<span style="color:var(--amber);">isi:isi</span>;</code>
         </div>
       </div>
-      <pre>Exemplo de cadeia válida (30 chars):  p{(()){}}#isisiisis:isisiisis;
-                                      ├─── Etapa 1 (AP) ───┤└── Etapa 2 (ALL): 19 chars ──┘</pre>
-    </div>
-    <div class="footer"><span>Andrey &amp; Igor • CC6NA</span><span>Slide 2 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 3 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">2. Fundamentação Formal</div>
-      <h2>Classificação na Hierarquia de Chomsky</h2>
-      <div class="grid2">
-        <div class="box">
-          <h3>Etapa 1: L₁ ∈ LLC \ LR</h3>
-          <p><code>L₁ = { p{α}#w:u; | α ∈ D₂*, w,u ∈ {i,s}⁺ }</code></p>
-          <ul>
-            <li><strong>Prova (Bombeamento Regular):</strong> para <code>z = p{(ᵖ)ᵖ}#i:i;</code>, qualquer fator <code>y</code> com <code>|xy| ≤ p</code> cai em <code>p{(ᵖ⁻²</code>.</li>
-            <li>Bombear <code>xy²z</code> duplica <code>p</code>, desequilibra <code>{</code> ou cria mais <code>(</code> do que <code>)</code> ⇒ <code>xy²z ∉ L₁</code>.</li>
+      <div class="ae-foot">
+        <span>Problema original de compiladores (Variante A) — distinto dos exemplos de sala</span>
+        <span>02 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 3 — [NOVO] O QUE É ER NO MINILANG-COMPILER?
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta green"><span>Camada 1 (AV1) · Expressões Regulares</span><span class="ae-num">03 / 14</span></div>
+        <h2 class="assertion">No MiniLang-Compiler, as <span class="hi-g">ERs</span> leem o código-fonte e filtram o alfabeto.</h2>
+      </div>
+
+      <div class="ae-body">
+        <div class="grid2" style="flex:1;">
+          <div class="panel top-g" style="justify-content:flex-start; gap:20px;">
+            <div class="panel-h"><strong>O que é ER no nosso compilador?</strong><span class="tag green">Tipo 3 · Regular</span></div>
+            <ul class="pts green">
+              <li><strong>Definição:</strong> padrão formal sem pilha nem fita, executado pelo <code>MiniLexer</code> (AFNε de Thompson).</li>
+              <li><strong>Papel no fluxo:</strong> transforma o texto <code>programa.min</code> em tokens e projeta 1:1 para o alfabeto <code>Σ_AP</code>.</li>
+              <li><strong>Barreira léxica:</strong> bloqueia caracteres estranhos (como <code>@</code> ou <code>$</code>) antes dos autômatos.</li>
+              <li><strong>Limitação:</strong> ER não tem memória para contar profundidade de <code>{ }</code> e <code>( )</code>.</li>
+            </ul>
+          </div>
+
+          <div class="panel" style="justify-content:space-between;">
+            <div class="panel-h"><strong>Projeção mecânica (sem checar regras)</strong><span class="tag">MiniLexer → Σ_AP</span></div>
+            <div class="map-list">
+              <div class="map-row"><span class="m-l">program</span><span class="m-a">→</span><span class="m-r" style="color:var(--cyan);">p</span></div>
+              <div class="map-row"><span class="m-l">{ } &nbsp; ( )</span><span class="m-a">→</span><span class="m-r" style="color:var(--cyan);">{ } &nbsp; ( )</span></div>
+              <div class="map-row"><span class="m-l">int &nbsp;/&nbsp; 101</span><span class="m-a">→</span><span class="m-r" style="color:var(--amber);">i</span></div>
+              <div class="map-row"><span class="m-l">string &nbsp;/&nbsp; "ana"</span><span class="m-a">→</span><span class="m-r" style="color:var(--amber);">s</span></div>
+              <div class="map-row err"><span class="m-l">@ &nbsp;(LEX-01)</span><span class="m-a">→</span><span class="m-r" style="color:var(--red);">✗ ERRO LÉXICO</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ae-foot">
+        <span>MiniLexer (AV1) continua ativo em src/lexer.py · Modo raw também permite digitar Σ_AP direto</span>
+        <span>03 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 4 — PIPELINE EM 2 ETAPAS (CONEXÃO AP → ALL)
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta"><span>Integração das Etapas da AV2</span><span class="ae-num">04 / 14</span></div>
+        <h2 class="assertion">O <span class="hi-c">AP</span> valida a sintaxe primeiro; só se aceitar, o <span class="hi-a">ALL</span> valida a fatia <code style="color:var(--amber);">w:u</code>.</h2>
+      </div>
+
+      <div class="ae-body">
+        <div class="dissect-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:14.5px; font-weight:700; color:var(--muted);">CADEIA PRINCIPAL DA DEMO — INT-01 (30 SÍMBOLOS)</span>
+            <span class="tag green">i = int · s = string</span>
+          </div>
+          <div class="dissect-row">
+            <div class="d-chunk c">
+              <span class="sym">p{(()){}}</span>
+              <span class="lbl">Etapa 1 · AP (Escopos)</span>
+            </div>
+            <div class="d-chunk m"><span class="sym">#</span><span class="lbl">separa</span></div>
+            <div class="d-chunk a">
+              <span class="sym">isisiisis : isisiisis</span>
+              <span class="lbl">Fatia extraída → Etapa 2 · ALL (19 chars)</span>
+            </div>
+            <div class="d-chunk m"><span class="sym">;</span><span class="lbl">fim</span></div>
+          </div>
+        </div>
+
+        <div class="panel" style="padding:18px 24px;">
+          <ul class="pts compact">
+            <li><strong style="color:var(--green);">INT-01 (Aceita tudo):</strong> AP aceita em 31 passos → extrai <code>isisiisis:isisiisis</code> → ALL aceita em 201 passos.</li>
+            <li><strong style="color:var(--red);">INT-02 (Erro sintático):</strong> faltou fechar <code>}</code> → AP rejeita em <code>q2</code> → <strong>ALL nem executa (SKIP)</strong>.</li>
+            <li><strong style="color:var(--amber);">INT-03 (Erro semântico):</strong> sintaxe OK (AP aceita), mas ordem final trocada (<code>is</code> ≠ <code>si</code>) → <strong>ALL rejeita em <code>q4</code></strong>.</li>
           </ul>
         </div>
-        <div class="box">
-          <h3>Etapa 2: L₂ ∈ LSC \ LLC</h3>
-          <p><code>L₂ = { w:w | w ∈ {i,s}⁺ }</code></p>
-          <ul>
-            <li><strong>Prova (Bombeamento LLC):</strong> para <code>z = iᵖsᵖ:iᵖsᵖ</code>, com <code>|vwx| ≤ p</code>:</li>
-            <li>Se <code>vwx</code> fica de um lado só, quebra o tamanho; se cruza <code>:</code>, só atinge <code>sᵖ</code> à esq. e <code>iᵖ</code> à dir., quebrando igualdade posicional.</li>
-            <li>Reconhecida em fita linearmente limitada ⇒ <strong>LSC</strong>.</li>
-          </ul>
+      </div>
+
+      <div class="ae-foot">
+        <span>Conexão real entre estágios exigida pela lauda (sem atalhos fora dos autômatos)</span>
+        <span>04 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 5 — CHOMSKY & BOMBEAMENTO
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta violet"><span>Fundamentação Formal · Hierarquia de Chomsky</span><span class="ae-num">05 / 14</span></div>
+        <h2 class="assertion">ER não conta profundidade; pilha (LIFO) não compara tipos na mesma ordem.</h2>
+      </div>
+
+      <div class="ae-body">
+        <div class="grid2" style="flex:1;">
+          <div class="panel top-c" style="justify-content:space-between;">
+            <div class="panel-h"><strong>Por que L₁ exige AP?</strong><span class="tag cyan">L₁ ∈ LLC \ LR</span></div>
+            <div class="visual-demo">
+              <div class="tok-row">
+                <span class="tok r">p</span><span class="tok r">{</span><span class="tok r">( ( (</span>
+                <span class="tok">) ) )</span><span class="tok">}#i:i;</span>
+              </div>
+              <div style="font-family:var(--mono); font-size:14.5px; color:var(--sub);">
+                Bombear <code>y=((</code> → <strong style="color:#fecdd3;">p{((((())))}#i:i;</strong> <strong style="color:var(--red);">✗</strong>
+              </div>
+            </div>
+            <ul class="pts compact">
+              <li>Pelo <strong>Lema do Bombeamento Regular</strong>, <code>|xy| ≤ p</code> prende <code>y</code> no início.</li>
+              <li>Repetir <code>y</code> duplica <code>p</code>, <code>{</code> ou cria mais <code>(</code> que <code>)</code>.</li>
+              <li><strong>Conclusão:</strong> AFD/ER não resolve → precisa de <strong>AP</strong>.</li>
+            </ul>
+          </div>
+
+          <div class="panel top-a" style="justify-content:space-between;">
+            <div class="panel-h"><strong>Por que L₂ = w:w exige ALL?</strong><span class="tag amber">L₂ ∈ LSC \ LLC</span></div>
+            <div class="visual-demo">
+              <div class="lifo-compare">
+                <div class="lc-box" style="border-color:rgb(251 113 133 / 0.45);">
+                  <strong style="color:var(--red);">Pilha (LIFO) inverte ✗</strong>
+                  <code>i s</code> → sai <code>s i</code>
+                </div>
+                <div class="lc-box" style="border-color:rgb(34 197 94 / 0.45);">
+                  <strong style="color:var(--green);">Fita (ALL) mesma ordem ✓</strong>
+                  <code>i s : i s</code>
+                </div>
+              </div>
+              <div style="font-family:var(--mono); font-size:14.5px; color:var(--sub);">
+                <code>iiss:iiss</code> → bombear cruzando <code>:</code> → <strong style="color:#fecdd3;">iisss:iiiss</strong> <strong style="color:var(--red);">✗</strong>
+              </div>
+            </div>
+            <ul class="pts compact amber">
+              <li>Pelo <strong>Lema do Bombeamento LLC</strong>, <code>|vwx| ≤ p</code> não alcança blocos iguais nos dois lados.</li>
+              <li><strong>Conclusão:</strong> AP não resolve → precisa de <strong>ALL</strong>.</li>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="footer"><span>Referências: Sipser (2013), Hopcroft et al. (2007), Aho et al. (2006)</span><span>Slide 3 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 4 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">3. Etapa 1 — Gramática Livre de Contexto</div>
-      <h2>GLC LL(1) e Derivação Passo a Passo</h2>
-      <div class="grid2">
-        <div class="box">
-          <h3>Produções de G = (V, T, P, S)</h3>
-          <pre>V = { S, B, T, R }
-T = { p, {, }, (, ), #, i, s, :, ; }
+      <div class="ae-foot">
+        <span>Referências: Sipser (2013) · Hopcroft, Motwani &amp; Ullman (2007)</span>
+        <span>05 / 14</span>
+      </div>
+    </section>
 
-P1: S → p{ B }# T : T ;
-P2: B → { B } B
-P3: B → ( B ) B
-P4: B → ε
-P5: T → i R      P6: T → s R
-P7: R → i R      P8: R → s R      P9: R → ε</pre>
-        </div>
-        <div class="box">
-          <h3>Derivação de <code>p{(()){}}#isisi:isisi;</code> (22 chars)</h3>
-          <pre>S ⇒ p{B}#T:T;                       [P1]
-  ⇒ p{(B)B}#T:T;                    [P3]
-  ⇒ p{((B)B)B}#T:T;                 [P3]
-  ⇒* p{(())B}#T:T;                  [P4, P4]
-  ⇒ p{(()){B}B}#T:T;                [P2]
-  ⇒* p{(()){}}#T:T;                 [P4, P4]
-  ⇒* p{(()){}}#isisi:T;             [P5,P8,P7,P8,P7,P9]
-  ⇒* p{(()){}}#isisi:isisi;         [P5,P8,P7,P8,P7,P9]</pre>
+    <!-- ================================================================
+         SLIDE 6 — [NOVO] O QUE É O AP NO MINILANG-COMPILER?
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta"><span>Camada 2 (AV2 · Etapa 1) · Autômato de Pilha</span><span class="ae-num">06 / 14</span></div>
+        <h2 class="assertion">No MiniLang-Compiler, o <span class="hi-c">AP</span> usa uma pilha LIFO para validar escopos e estrutura.</h2>
+      </div>
+
+      <div class="ae-body">
+        <div class="grid2" style="flex:1;">
+          <div class="panel top-c" style="justify-content:flex-start; gap:20px;">
+            <div class="panel-h"><strong>O que é o AP no nosso compilador?</strong><span class="tag cyan">Tipo 2 · DPDA</span></div>
+            <ul class="pts">
+              <li><strong>Definição:</strong> autômato finito + <strong>pilha ilimitada</strong> (o último símbolo que entra é o primeiro que sai).</li>
+              <li><strong>Papel aqui (<code>MiniParser</code>):</strong> valida a sintaxe <code>p{α}#w:u;</code> com aninhamento arbitrário de <code>{ }</code> e <code>( )</code>.</li>
+              <li><strong>Regra de ouro:</strong> abriu bloco → <strong>empilha</strong>; fechou bloco → <strong>desempilha</strong> o par exato do topo.</li>
+              <li><strong>Aceitação e parada:</strong> atinge <code>q8</code> lendo 100% da entrada, sempre em no máximo <code>n + 1</code> passos.</li>
+            </ul>
+          </div>
+
+          <div class="panel" style="justify-content:space-between;">
+            <div class="panel-h"><strong>Ficha Técnica do MiniParser</strong><span class="tag">ap.jff</span></div>
+            <div class="spec-grid">
+              <div class="spec-box"><span>Estados</span><strong style="color:var(--cyan);">9 estados (q0..q8)</strong></div>
+              <div class="spec-box"><span>Determinismo</span><strong style="color:var(--green);">0 não-det. (JFLAP)</strong></div>
+              <div class="spec-box"><span>Alfabeto Pilha Γ</span><strong>{ Z, {, ( }</strong></div>
+              <div class="spec-box"><span>Transições</span><strong>20 regras · O(n)</strong></div>
+            </div>
+            <div class="bridge-strip" style="padding:12px 16px;">
+              <span>Critério de aceitação:</span>
+              <code style="font-size:15.5px; color:var(--green);">Estado final q8 + pilha Z + fim da entrada</code>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="footer"><span>Gramática LL(1) não-ambígua • glc.jff validado no JFLAP 7.1</span><span>Slide 4 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 5 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">4. Etapa 1 — Autômato de Pilha Determinístico</div>
-      <h2>AP (MiniParser): 9 Estados e Relação com a GLC</h2>
-      <div class="grid2">
-        <div class="box">
-          <h3>Especificação da 7-tupla</h3>
-          <ul>
-            <li><strong>Estados (9 ≥ 8):</strong> <code>q0..q8</code>, inicial <code>q0</code>, final <code>F = {q8}</code>.</li>
-            <li><strong>Pilha:</strong> <code>Γ = {Z, {, (}</code>, topo inicial <code>Z</code>.</li>
-            <li><strong>Aceitação:</strong> estado final <code>q8</code> + <strong>consumo integral</strong> da entrada.</li>
-            <li><strong>Determinismo:</strong> <code>0</code> estados não-determinísticos (validado pelo JFLAP 7.1).</li>
-            <li><strong>Terminação:</strong> no máximo <code>n + 1</code> passos (<code>O(n)</code>).</li>
-          </ul>
-        </div>
-        <div class="box">
-          <h3>Fluxo dos Estados</h3>
-          <pre>q0 --p--> q1 --{ / push {--> q2 (empilha {,( / desempilha },))
-q2 --ε, Z / Z--> q3 (escopo principal fechado)
-q3 --#--> q4 --i|s--> q5 (assinatura {i,s}⁺)
-q5 --:--> q6 --i|s--> q7 (chamada {i,s}⁺)
-q7 --;--> q8 (ACEITA)</pre>
-          <p style="font-size:0.95rem; color:#94a3b8;">A pilha acima de <code>Z</code> em <code>q2</code> mantém exatamente os blocos abertos de <code>B</code>, garantindo <code>L(M_AP) = L(G)</code>.</p>
+      <div class="ae-foot">
+        <span>AP valida o formato (incluindo que assinatura e chamada não são vazias), mas não compara se w = u</span>
+        <span>06 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 7 — ETAPA 1: GLC LL(1) & DERIVAÇÃO
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta"><span>Etapa 1 · Gramática Livre de Contexto</span><span class="ae-num">07 / 14</span></div>
+        <h2 class="assertion">Nove regras LL(1) geram todo programa válido — cada <code style="color:var(--cyan);">B</code> espelha a pilha do AP.</h2>
+      </div>
+
+      <div class="ae-body">
+        <div class="grid2" style="flex:1;">
+          <div class="panel top-c" style="justify-content:space-between;">
+            <div class="panel-h"><strong>Regras da GLC (glc.jff)</strong><span class="tag cyan">9 produções</span></div>
+            <div class="rule-card">
+              <span class="rule-lbl">1. Molde do programa</span>
+              <span class="rule-code"><span style="color:var(--cyan);">S</span> → p{ <span style="color:var(--cyan);">B</span> }# <span style="color:var(--amber);">T</span> : <span style="color:var(--amber);">T</span> ;</span>
+            </div>
+            <div class="rule-card">
+              <span class="rule-lbl">2. Escopos aninhados (vira a Pilha em q2)</span>
+              <span class="rule-code"><span style="color:var(--cyan);">B</span> → {B}B &nbsp;|&nbsp; (B)B &nbsp;|&nbsp; ε</span>
+            </div>
+            <div class="rule-card">
+              <span class="rule-lbl">3. Tipos não-vazios (q4→q5 e q6→q7)</span>
+              <span class="rule-code"><span style="color:var(--amber);">T</span> → iR | sR &nbsp;&nbsp; <span style="color:var(--amber);">R</span> → iR | sR | ε</span>
+            </div>
+          </div>
+
+          <div class="panel" style="justify-content:space-between;">
+            <div class="panel-h"><strong>Construção passo a passo (Derivação)</strong><span class="tag violet">Sem ambiguidade</span></div>
+            <div class="build-steps">
+              <div class="b-step"><span class="b-num">1. Molde</span><span class="b-str">p{ <span style="color:var(--cyan);">B</span> }# T : T ;</span><span class="b-note">P1</span></div>
+              <div class="b-step"><span class="b-num">2. Escopos</span><span class="b-str">p{ <span style="color:var(--cyan);">(()){}</span> }# <span style="color:var(--amber);">T</span> : T ;</span><span class="b-note">P2, P3, P4</span></div>
+              <div class="b-step"><span class="b-num">3. Assin.</span><span class="b-str">p{(()){}}#<span style="color:var(--amber);">isi</span>:<span style="color:var(--amber);">T</span>;</span><span class="b-note">P5..P9</span></div>
+              <div class="b-step ok"><span class="b-num" style="color:var(--green);">4. Final</span><span class="b-str">p{(()){}}#isi:isi;</span><span class="b-note" style="color:#bbf7d0;">✓ L(G) = L(AP)</span></div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="footer"><span>ap.jff • 9 estados • 0 divergências no JFLAP 7.1</span><span>Slide 5 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 6 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">5. Etapa 2 — Autômato Linearmente Limitado</div>
-      <h2>ALL (MiniSemantic): 11 Estados em Fita Limitada</h2>
-      <div class="grid2">
-        <div class="box">
-          <h3>Modelo de Fita Estritamente Limitada</h3>
-          <ul>
-            <li><strong>Estados (11 ≥ 8):</strong> <code>q0..q10</code>, final <code>F = {q10}</code>.</li>
-            <li><strong>Alfabetos:</strong> <code>Σ = {i, s, :}</code>; <code>Γ = {&lt;, &gt;, i, s, :, I, S}</code>.</li>
-            <li><strong>Memória:</strong> exatamente <code>n</code> células graváveis (<code>1..n</code>) + <strong>2 bordas fixas</strong> <code>&lt;</code> (pos 0) e <code>&gt;</code> (pos <code>n+1</code>).</li>
-            <li><strong>Segurança de borda:</strong> <code>&lt;</code> só move <code>R</code> (em <code>q0</code>), <code>&gt;</code> só move <code>L</code> (em <code>q9</code>). Jamais sobrescreve ou cruza bordas.</li>
-          </ul>
+      <div class="ae-foot">
+        <span>Para INT-01 (30 chars), são exatamente 28 passos determinísticos (veremos ao vivo em ./glc)</span>
+        <span>07 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 8 — ETAPA 1: PILHA DO AP NA PRÁTICA
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta"><span>Etapa 1 · Pilha em Funcionamento</span><span class="ae-num">08 / 14</span></div>
+        <h2 class="assertion">Cada abertura empilha; cada fechamento desempilha — voltar a <code style="color:var(--green);">Z</code> fecha o escopo.</h2>
+      </div>
+
+      <div class="ae-body">
+        <div class="stack-story">
+          <div class="st-frame">
+            <div class="st-top"><div class="st-step">1. Abre</div><div class="st-read">p<span style="color:var(--cyan);">{</span></div></div>
+            <div class="st-tower"><div class="s-blk">{</div><div class="s-blk z">Z</div></div>
+            <div class="st-action">Empilha <code>{</code></div>
+          </div>
+          <div class="st-frame">
+            <div class="st-top"><div class="st-step">2. Aninha</div><div class="st-read"><span style="color:var(--amber);">((</span></div></div>
+            <div class="st-tower"><div class="s-blk p">(</div><div class="s-blk p">(</div><div class="s-blk">{</div><div class="s-blk z">Z</div></div>
+            <div class="st-action">Empilha dois <code>(</code></div>
+          </div>
+          <div class="st-frame">
+            <div class="st-top"><div class="st-step">3. Fecha</div><div class="st-read"><span style="color:var(--amber);">))</span></div></div>
+            <div class="st-tower"><div class="s-blk">{</div><div class="s-blk z">Z</div></div>
+            <div class="st-action">Desempilha <code>(</code></div>
+          </div>
+          <div class="st-frame">
+            <div class="st-top"><div class="st-step">4. Zera</div><div class="st-read"><span style="color:var(--cyan);">{}</span> e <span style="color:var(--cyan);">}</span></div></div>
+            <div class="st-tower"><div class="s-blk z">Z</div></div>
+            <div class="st-action">Voltou à base <code>Z</code></div>
+          </div>
+          <div class="st-frame final">
+            <div class="st-top"><div class="st-step" style="color:var(--green);">5. Tipos</div><div class="st-read" style="color:var(--green);">#w:u;</div></div>
+            <div class="st-tower"><div class="s-blk z">Z</div></div>
+            <div class="st-action" style="color:var(--green);"><code>ε,Z/Z</code> → <strong>ACEITA q8</strong></div>
+          </div>
         </div>
-        <div class="box">
-          <h3>Algoritmo In-Place (Casamento Posicional)</h3>
-          <ol>
-            <li><code>q0→q1</code>: entra pela borda <code>&lt;</code> e exige assinatura não vazia.</li>
-            <li><code>q1/q8</code>: marca próximo símbolo à esq. (<code>i→I</code> vai para <code>q2</code>; <code>s→S</code> vai para <code>q3</code>).</li>
-            <li><code>q2/q3→q4/q5</code>: cruza <code>:</code>, pula <code>I/S</code> e exige o mesmo tipo à direita.</li>
-            <li><code>q6→q7→q8</code>: volta até a fronteira marcada e repete.</li>
-            <li><code>q8→q9→q10</code>: ao ver <code>:</code>, varre sobras até <code>&gt;</code> e aceita em <code>q10</code>.</li>
-          </ol>
-          <p style="font-size:0.95rem; color:#94a3b8;"><strong>Terminação:</strong> marcação irreversível em cada ciclo ⇒ <code>O(n²)</code>.</p>
+
+        <div class="err-strip">
+          <span><strong>Exemplo de erro:</strong> em <code>p{(()#i:i;</code> chega <code>#</code> com <code>(</code> ainda no topo da pilha</span>
+          <span class="tag red">✗ Trava em q2 (ALL não executa)</span>
         </div>
       </div>
-    </div>
-    <div class="footer"><span>all.jff • 11 estados • 384 casos com 0 divergências no JFLAP 7.1</span><span>Slide 6 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 7 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">6. Demonstração Ao Vivo (Interface Web + CLI + JFLAP)</div>
-      <h2>Os 3 Cenários de Integração + Erro Léxico</h2>
-      <table>
-        <thead>
-          <tr><th>Cenário</th><th>Entrada (≥ 18 chars)</th><th>Etapa 1 (AP)</th><th>Etapa 2 (ALL)</th><th>Regra Verificada</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>INT-01</strong></td>
-            <td><code>p{(()){}}#isisiisis:isisiisis;</code> (30)</td>
-            <td class="ok">ACEITA (31 passos)</td>
-            <td class="ok">ACEITA (201 passos)</td>
-            <td>Escopos balanceados + 9 tipos idênticos na mesma ordem</td>
-          </tr>
-          <tr>
-            <td><strong>INT-02</strong></td>
-            <td><code>p{(()){}#isisiisis:isisiisis;</code> (29)</td>
-            <td class="err">REJEITA (em q2)</td>
-            <td style="color:#94a3b8;">NÃO EXECUTA</td>
-            <td>Chave <code>{</code> do escopo principal sem fechamento antes de <code>#</code></td>
-          </tr>
-          <tr>
-            <td><strong>INT-03</strong></td>
-            <td><code>p{(()){}}#isisiisis:isisiissi;</code> (30)</td>
-            <td class="ok">ACEITA (31 passos)</td>
-            <td class="warn">REJEITA (em q4)</td>
-            <td>Mesmas quantidades de <code>i</code>/<code>s</code>, mas ordem invertida no fim (<code>is</code> vs <code>si</code>)</td>
-          </tr>
-          <tr>
-            <td><strong>LEX-01</strong></td>
-            <td><code>p{(()){}}#isisi@isisi;</code> (22)</td>
-            <td class="err" colspan="2">ERRO LÉXICO (posição 15: símbolo '@' fora de Σ_AP)</td>
-            <td>Validação de alfabeto antes dos autômatos</td>
-          </tr>
-        </tbody>
-      </table>
-      <p style="margin-top:18px;">Comando ao vivo: <code>.\.venv\Scripts\python.exe -m src.av2.web</code> — editor <code>programa.min</code> com sublinhado de erro, modo <code>raw</code> sincronizado e grafos SVG em <code>⛶ fullscreen</code>.</p>
-    </div>
-    <div class="footer"><span>Demonstração interativa: Pilha + Fita Limitada + Derivação</span><span>Slide 7 / 11</span></div>
-  </section>
+      <div class="ae-foot">
+        <span>Exemplo visual: p{(()){}}#isi:isi; · Pilha real implementada sem regex ou contadores externos</span>
+        <span>08 / 14</span>
+      </div>
+    </section>
 
-  <!-- SLIDE 8 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">7. Bateria de Testes e Validação Cruzada</div>
-      <h2>Resultados: 227 Testes no pytest + 418 no JFLAP 7.1</h2>
-      <div class="grid2">
-        <div class="box">
-          <h3>Cobertura da Lauda (50 Casos Oficiais)</h3>
-          <ul>
-            <li><strong>AP isolado:</strong> 10 aceitas (≥ 18) + 10 rejeitadas (≥ 18) + 2 limites (<code>""</code>, <code>p{}#i:i;</code>).</li>
-            <li><strong>ALL isolado:</strong> 10 aceitas (≥ 18) + 10 rejeitadas (≥ 18: aridade, tipo, ordem, <code>:</code>) + 3 limites (<code>""</code>, <code>:</code>, <code>i:i</code>).</li>
-            <li><strong>Integração:</strong> 3 cenários obrigatórios (30/29/30 chars).</li>
-            <li><strong>Erro léxico:</strong> 2 casos (<code>@</code> em Σ_AP e <code>$</code> em Σ_ALL).</li>
-            <li><strong>Enumeração exaustiva ALL:</strong> todas as <strong>3.280 cadeias</strong> de tamanho 0..7 em <code>{i, s, :}*</code>.</li>
-          </ul>
+    <!-- ================================================================
+         SLIDE 9 — ETAPA 1: DIAGRAMA COMPLETO DO AP (9 ESTADOS)
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta"><span>Etapa 1 · Diagrama de Estados (ap.jff)</span><span class="ae-num">09 / 14</span></div>
+        <h2 class="assertion">O AP tem <span class="hi-c">9 estados</span>, zero não-determinismo e sempre termina em <span class="hi-g">O(n)</span>.</h2>
+      </div>
+
+      <div class="ae-body" style="gap:14px;">
+        <div class="full-svg-card">
+          <svg viewBox="0 0 920 330" role="img" aria-label="Diagrama do Autômato de Pilha de 9 estados">
+            <defs>
+              <marker id="ap-a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#647f9c"/></marker>
+              <marker id="ap-c" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#38bdf8"/></marker>
+              <marker id="ap-g" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#22c55e"/></marker>
+            </defs>
+
+            <path d="M 20 122 L 50 122" class="aut-edge g" marker-end="url(#ap-g)"/>
+            <path d="M 102 122 L 176 122" class="aut-edge" marker-end="url(#ap-a)"/>
+            <text x="139" y="108" class="aut-elbl">p,Z/Z</text>
+            <path d="M 228 122 L 316 122" class="aut-edge c" marker-end="url(#ap-c)"/>
+            <text x="272" y="108" class="aut-elbl c">{,Z/{Z</text>
+            <path d="M 331 99 C 296 32, 392 32, 357 99" class="aut-edge c" marker-end="url(#ap-c)"/>
+            <text x="344" y="18" class="aut-elbl c">{,{/{{ | {,(/{(</text>
+            <text x="344" y="34" class="aut-elbl c">(,{/({ | (,(/((</text>
+            <text x="344" y="50" class="aut-elbl a">},{/ε | ),(/ε</text>
+            <path d="M 371 122 L 472 122" class="aut-edge c" marker-end="url(#ap-c)"/>
+            <text x="421" y="106" class="aut-elbl c">ε,Z/Z</text>
+            <text x="421" y="142" class="aut-elbl" style="fill:#8aa0b8; font-size:10.5px;">(só com topo Z)</text>
+            <path d="M 524 122 L 614 122" class="aut-edge" marker-end="url(#ap-a)"/>
+            <text x="569" y="108" class="aut-elbl">#,Z/Z</text>
+            <path d="M 666 122 L 772 122" class="aut-edge" marker-end="url(#ap-a)"/>
+            <text x="719" y="104" class="aut-elbl">i,Z/Z</text>
+            <text x="719" y="118" class="aut-elbl">s,Z/Z</text>
+            <path d="M 786 99 C 758 42, 842 42, 814 99" class="aut-edge" marker-end="url(#ap-a)"/>
+            <text x="800" y="36" class="aut-elbl">i,Z/Z | s,Z/Z</text>
+            <path d="M 800 148 Q 815 202 758 244" class="aut-edge" marker-end="url(#ap-a)"/>
+            <text x="826" y="202" class="aut-elbl">:,Z/Z</text>
+            <path d="M 708 254 L 558 254" class="aut-edge" marker-end="url(#ap-a)"/>
+            <text x="633" y="240" class="aut-elbl">i,Z/Z | s,Z/Z</text>
+            <path d="M 518 276 C 490 324, 570 324, 542 276" class="aut-edge" marker-end="url(#ap-a)"/>
+            <text x="530" y="324" class="aut-elbl">i,Z/Z | s,Z/Z</text>
+            <path d="M 504 254 L 362 254" class="aut-edge g" marker-end="url(#ap-g)"/>
+            <text x="433" y="240" class="aut-elbl g">;,Z/Z</text>
+
+            <g><circle cx="76" cy="122" r="24" class="aut-node init"/><text x="76" y="122" class="aut-lbl">q0</text></g>
+            <g><circle cx="202" cy="122" r="24" class="aut-node"/><text x="202" y="122" class="aut-lbl">q1</text></g>
+            <g><circle cx="344" cy="122" r="25" class="aut-node c"/><text x="344" y="122" class="aut-lbl">q2</text></g>
+            <g><circle cx="498" cy="122" r="24" class="aut-node"/><text x="498" y="122" class="aut-lbl">q3</text></g>
+            <g><circle cx="640" cy="122" r="24" class="aut-node"/><text x="640" y="122" class="aut-lbl">q4</text></g>
+            <g><circle cx="800" cy="122" r="24" class="aut-node"/><text x="800" y="122" class="aut-lbl">q5</text></g>
+            <g><circle cx="734" cy="254" r="24" class="aut-node"/><text x="734" y="254" class="aut-lbl">q6</text></g>
+            <g><circle cx="530" cy="254" r="24" class="aut-node"/><text x="530" y="254" class="aut-lbl">q7</text></g>
+            <g>
+              <circle cx="334" cy="254" r="25" class="aut-node ok"/>
+              <circle cx="334" cy="254" r="19" fill="none" stroke="#22c55e" stroke-width="2"/>
+              <text x="334" y="254" class="aut-lbl">q8</text>
+            </g>
+          </svg>
         </div>
-        <div class="box">
-          <h3>Validação Real no JFLAP7.1.jar</h3>
-          <pre>GLC (glc.jff): 9 producoes carregadas
-AP  (ap.jff) : 9 estados, 0 nao-det.,
-               34 casos, 0 divergencias
-ALL (all.jff): 11 estados,
-               384 casos, 0 divergencias
-----------------------------------------
-TOTAL JFLAP  : 418 casos, 0 divergencias
-TOTAL PYTEST : 227 passed (135 AV1 + 92 AV2)</pre>
+
+        <div class="zone-strip">
+          <div class="zone-card" style="border-left:4px solid var(--cyan);"><strong>q0 → q2</strong><span>Abre <code>p{</code> e empilha/desempilha blocos</span></div>
+          <div class="zone-card" style="border-left:4px solid var(--green);"><strong>q2 → q3</strong><span>Única <code>ε,Z/Z</code> (0 não-det. no JFLAP)</span></div>
+          <div class="zone-card" style="border-left:4px solid var(--amber);"><strong>q3 → q8</strong><span>Valida <code>#</code>, tipos, <code>:</code>, tipos e <code>;</code></span></div>
         </div>
       </div>
-    </div>
-    <div class="footer"><span>Fonte única de verdade: src/av2/spec.py</span><span>Slide 8 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 9 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">8. Análise Crítica</div>
-      <h2>Limitações Observadas nos Testes</h2>
-      <div class="grid3">
-        <div class="box">
-          <h3>1. Tempo O(n²) em Fita Única</h3>
-          <p>O movimento ida-e-volta do cabeçote faz o número de passos crescer quadraticamente (ex.: 19 chars → 201 passos no ALL).</p>
-        </div>
-        <div class="box">
-          <h3>2. Subconjunto de 2 Tipos</h3>
-          <p>Modelamos <code>i</code> e <code>s</code> para manter 11 estados didáticos; adicionar <code>float</code>/<code>bool</code>/<code>time</code> exigiria +2 estados de transporte/casamento por tipo.</p>
-        </div>
-        <div class="box">
-          <h3>3. Assinatura Única</h3>
-          <p>Valida uma assinatura e uma chamada por cadeia formal; múltiplas declarações demandariam identificadores e memória auxiliar na fita.</p>
+      <div class="ae-foot">
+        <span>Em q2, nenhuma leitura usa topo Z ⇒ sem conflito com ε,Z/Z</span>
+        <span>09 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 10 — [NOVO] O QUE É O ALL NO MINILANG-COMPILER?
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta amber"><span>Camada 3 (AV2 · Etapa 2) · Autômato Linearmente Limitado</span><span class="ae-num">10 / 14</span></div>
+        <h2 class="assertion">No MiniLang-Compiler, o <span class="hi-a">ALL</span> usa fita finita para casar tipos posição a posição.</h2>
+      </div>
+
+      <div class="ae-body">
+        <div class="grid2" style="flex:1;">
+          <div class="panel top-a" style="justify-content:flex-start; gap:20px;">
+            <div class="panel-h"><strong>O que é o ALL no nosso compilador?</strong><span class="tag amber">Tipo 1 · D-LBA</span></div>
+            <ul class="pts amber">
+              <li><strong>Definição:</strong> Máquina de Turing cujo cabeçote vai e volta, mas fica <strong>preso entre as bordas <code>&lt;</code> e <code>&gt;</code></strong>.</li>
+              <li><strong>Papel aqui (<code>MiniSemantic</code>):</strong> recebe a fatia <code>w:u</code> e verifica se assinatura e chamada têm <strong>mesma aridade e ordem</strong> (<code>w = u</code>).</li>
+              <li><strong>Estratégia in-place:</strong> marca cada par casado (<code>i→I</code>, <code>s→S</code>) sem alocar memória extra.</li>
+              <li><strong>Terminação garantida:</strong> marcação irreversível ⇒ no máximo <code>n/2</code> ciclos ⇒ <code>O(n²)</code>.</li>
+            </ul>
+          </div>
+
+          <div class="panel" style="justify-content:space-between;">
+            <div class="panel-h"><strong>Ficha Técnica &amp; Limite da Fita</strong><span class="tag">all.jff</span></div>
+            <div class="spec-grid">
+              <div class="spec-box"><span>Estados</span><strong style="color:var(--amber);">11 estados (q0..q10)</strong></div>
+              <div class="spec-box"><span>Transições</span><strong>28 regras · 100% det.</strong></div>
+              <div class="spec-box"><span>Alfabeto Fita Γ</span><strong>{ &lt;, &gt;, i, s, :, I, S }</strong></div>
+              <div class="spec-box"><span>Memória Total</span><strong style="color:var(--red);">n graváveis + &lt; &gt;</strong></div>
+            </div>
+            <div class="bridge-strip" style="padding:12px 16px; border-color:rgb(251 113 133 / 0.45);">
+              <span>Proteção de borda:</span>
+              <code style="font-size:15px; color:#fecdd3;">q0 só move R em &lt; · q9 só move L em &gt;</code>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="footer"><span>Requisito explícito da apresentação em sala</span><span>Slide 9 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 10 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">9. Divisão da Equipe e Transparência</div>
-      <h2>Contribuições e Declaração de IA</h2>
-      <div class="grid2">
-        <div class="box">
-          <h3>Contribuições</h3>
-          <ul>
-            <li><strong>Andrey Lourival Andrade Garcia:</strong> especificação formal, motor Python (GLC, AP, ALL, pipeline), CLI, Interface Web Interativa, gerador/validador JFLAP 7.1 e testes automatizados.</li>
-            <li><strong>Igor Cecim Vilhena:</strong> fundamentação bibliográfica e provas pelo Lema do Bombeamento, revisão da derivação e dos 50 casos, relatório técnico, slides e análise de limitações.</li>
-          </ul>
+      <div class="ae-foot">
+        <span>O ALL só é disparado se o AP aceitar · Validação de limites conferida em cada passo no Python e no JFLAP</span>
+        <span>10 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 11 — ETAPA 2: FITA LIMITADA NA PRÁTICA
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta amber"><span>Etapa 2 · Fita Limitada em Funcionamento</span><span class="ae-num">11 / 14</span></div>
+        <h2 class="assertion">O ALL marca um tipo à esquerda (<code style="color:var(--cyan);">i→I</code>, <code style="color:var(--amber);">s→S</code>) e exige o mesmo à direita.</h2>
+      </div>
+
+      <div class="ae-body" style="gap:14px;">
+        <div class="tape-story">
+          <div class="ts-row">
+            <div class="ts-title"><strong>1. Entra pela borda fixa <code>&lt;</code></strong><span>Estado q0 — fita com n + 2 células</span></div>
+            <div class="big-tape">
+              <div class="bt-cell b hd">&lt;</div><div class="bt-cell">i</div><div class="bt-cell">s</div><div class="bt-cell">i</div><div class="bt-cell sep">:</div><div class="bt-cell">i</div><div class="bt-cell">s</div><div class="bt-cell">i</div><div class="bt-cell b">&gt;</div>
+            </div>
+            <div class="ts-result">Move → célula 1</div>
+          </div>
+
+          <div class="ts-row">
+            <div class="ts-title"><strong style="color:var(--cyan);">2. Marca 1º tipo e cruza <code>:</code></strong><span>i → I na esquerda, busca i na direita</span></div>
+            <div class="big-tape">
+              <div class="bt-cell b">&lt;</div><div class="bt-cell mi">I</div><div class="bt-cell">s</div><div class="bt-cell">i</div><div class="bt-cell sep">:</div><div class="bt-cell hd" style="color:var(--cyan);">i</div><div class="bt-cell">s</div><div class="bt-cell">i</div><div class="bt-cell b">&gt;</div>
+            </div>
+            <div class="ts-result" style="color:var(--cyan);">Casa i→I e volta ←</div>
+          </div>
+
+          <div class="ts-row ok">
+            <div class="ts-title"><strong style="color:var(--green);">3. Varre até a borda <code>&gt;</code></strong><span>Sem sobras à direita → recua de &gt;</span></div>
+            <div class="big-tape">
+              <div class="bt-cell b">&lt;</div><div class="bt-cell mi">I</div><div class="bt-cell ms">S</div><div class="bt-cell mi">I</div><div class="bt-cell sep">:</div><div class="bt-cell mi">I</div><div class="bt-cell ms">S</div><div class="bt-cell mi hd">I</div><div class="bt-cell b">&gt;</div>
+            </div>
+            <div class="ts-result" style="color:var(--green);">✓ ACEITA em q10</div>
+          </div>
         </div>
-        <div class="box">
-          <h3>Uso de IA e Verificação</h3>
-          <p>IA utilizada como apoio na estruturação de código, interface web e revisão textual (detalhado em <code>DECLARACAO_IA.md</code>).</p>
-          <p><strong>Verificado pela equipe:</strong> provas matemáticas, todas as transições de pilha e fita, 227 testes no <code>pytest</code> e 418 casos reais no <code>JFLAP7.1.jar</code> com 0 divergências.</p>
+
+        <div class="err-strip">
+          <span><strong>Exemplo de erro:</strong> em <code>isi:iis</code>, no 2º ciclo busca <code>s</code> mas lê <code>i</code> na direita</span>
+          <span class="tag red">✗ Trava em q5 (REJEITA)</span>
         </div>
       </div>
-    </div>
-    <div class="footer"><span>Repositório: github.com/1drey2drey3drey/MiniLang-Compiler</span><span>Slide 10 / 11</span></div>
-  </section>
 
-  <!-- SLIDE 11 -->
-  <section class="slide">
-    <div>
-      <div class="slide-kicker">10. Encerramento</div>
-      <h1>Obrigado!</h1>
-      <p style="font-size:1.3rem;">Prontos para a demonstração de novas entradas e arguição individual.</p>
-      <div class="box" style="margin-top:28px;">
-        <h3>Resumo Rápido para Arguição</h3>
-        <p><strong>AP (9 estados, DPDA):</strong> aceita <code>p{α}#w:u;</code> por estado final (<code>q8</code>) + consumo total da entrada; pilha valida Dyck <code>D₂*</code>.<br>
-        <strong>ALL (11 estados, D-LBA):</strong> recebe <code>&lt;w:u&gt;</code> em <code>n + 2</code> células fixas; aceita <code>w = u</code> em <code>q10</code> sem nunca cruzar ou sobrescrever <code>&lt;</code> e <code>&gt;</code>.</p>
+      <div class="ae-foot">
+        <span>Bordas vermelhas &lt; e &gt; invioláveis · Se faltar ou sobrar argumento, q4/q5 ou q9 rejeitam na hora</span>
+        <span>11 / 14</span>
       </div>
-    </div>
-    <div class="footer"><span>MiniLang-Compiler (AV2) • CC6NA • 25/11/2026</span><span>Slide 11 / 11</span></div>
-  </section>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 12 — ETAPA 2: DIAGRAMA COMPLETO DO ALL (11 ESTADOS)
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta amber"><span>Etapa 2 · Diagrama de Estados (all.jff)</span><span class="ae-num">12 / 14</span></div>
+        <h2 class="assertion">O ALL organiza <span class="hi-a">11 estados</span> em 3 trilhas coloridas e protege <code style="color:var(--red);">&lt;</code> e <code style="color:var(--red);">&gt;</code>.</h2>
+      </div>
+
+      <div class="ae-body" style="gap:14px;">
+        <div class="full-svg-card">
+          <svg viewBox="0 0 900 455" role="img" aria-label="Diagrama do Autômato Linearmente Limitado de 11 estados">
+            <defs>
+              <marker id="al-c" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#38bdf8"/></marker>
+              <marker id="al-a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#fbbf24"/></marker>
+              <marker id="al-v" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#c084fc"/></marker>
+              <marker id="al-g" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#22c55e"/></marker>
+            </defs>
+
+            <path d="M 14 188 L 40 188" class="aut-edge g" marker-end="url(#al-g)"/>
+            <path d="M 86 188 L 160 188" class="aut-edge g" marker-end="url(#al-g)"/>
+            <text x="123" y="174" class="aut-elbl g">&lt;→&lt;,R</text>
+            <path d="M 202 172 L 332 88" class="aut-edge c" marker-end="url(#al-c)"/>
+            <text x="242" y="116" class="aut-elbl c">i→I,R</text>
+            <path d="M 342 54 C 316 8, 388 8, 362 54" class="aut-edge c" marker-end="url(#al-c)"/>
+            <text x="352" y="14" class="aut-elbl c">i→i,R | s→s,R</text>
+            <path d="M 376 76 L 564 76" class="aut-edge c" marker-end="url(#al-c)"/>
+            <text x="470" y="62" class="aut-elbl c">:→:,R</text>
+            <path d="M 579 54 C 554 8, 624 8, 599 54" class="aut-edge c" marker-end="url(#al-c)"/>
+            <text x="589" y="14" class="aut-elbl c">I→I,R | S→S,R</text>
+            <path d="M 610 88 L 776 174" class="aut-edge c" marker-end="url(#al-c)"/>
+            <text x="710" y="114" class="aut-elbl c">i→I,L</text>
+            <path d="M 202 204 L 332 286" class="aut-edge a" marker-end="url(#al-a)"/>
+            <text x="242" y="268" class="aut-elbl a">s→S,R</text>
+            <path d="M 342 320 C 316 366, 388 366, 362 320" class="aut-edge a" marker-end="url(#al-a)"/>
+            <text x="352" y="368" class="aut-elbl a">i→i,R | s→s,R</text>
+            <path d="M 376 298 L 564 298" class="aut-edge a" marker-end="url(#al-a)"/>
+            <text x="510" y="284" class="aut-elbl a">:→:,R</text>
+            <path d="M 579 320 C 554 362, 624 362, 599 320" class="aut-edge a" marker-end="url(#al-a)"/>
+            <text x="662" y="352" class="aut-elbl a">I→I,R | S→S,R</text>
+            <path d="M 610 286 L 776 202" class="aut-edge a" marker-end="url(#al-a)"/>
+            <text x="712" y="266" class="aut-elbl a">s→S,L</text>
+            <path d="M 817 175 C 874 150, 874 226, 817 201" class="aut-edge v" marker-end="url(#al-v)"/>
+            <text x="858" y="142" class="aut-elbl v">I→I,L</text>
+            <text x="858" y="242" class="aut-elbl v">S→S,L</text>
+            <path d="M 774 188 L 615 188" class="aut-edge v" marker-end="url(#al-v)"/>
+            <text x="694" y="174" class="aut-elbl v">:→:,L</text>
+            <path d="M 579 166 C 554 122, 624 122, 599 166" class="aut-edge v" marker-end="url(#al-v)"/>
+            <text x="589" y="124" class="aut-elbl v">i→i,L | s→s,L</text>
+            <path d="M 566 188 L 378 188" class="aut-edge v" marker-end="url(#al-v)"/>
+            <text x="472" y="174" class="aut-elbl v">I→I,R | S→S,R</text>
+            <path d="M 352 164 L 352 102" class="aut-edge c" marker-end="url(#al-c)"/>
+            <text x="320" y="138" class="aut-elbl c">i→I,R</text>
+            <path d="M 352 212 L 352 272" class="aut-edge a" marker-end="url(#al-a)"/>
+            <text x="320" y="246" class="aut-elbl a">s→S,R</text>
+            <path d="M 372 202 Q 456 236 482 370" class="aut-edge g" marker-end="url(#al-g)"/>
+            <text x="448" y="250" class="aut-elbl g">:→:,R</text>
+            <path d="M 476 414 C 448 450, 524 450, 496 414" class="aut-edge g" marker-end="url(#al-g)"/>
+            <text x="486" y="450" class="aut-elbl g">I→I,R | S→S,R</text>
+            <path d="M 510 392 L 712 392" class="aut-edge g" marker-end="url(#al-g)"/>
+            <text x="611" y="378" class="aut-elbl g">&gt;→&gt;,L</text>
+
+            <g><circle cx="64" cy="188" r="22" class="aut-node init"/><text x="64" y="188" class="aut-lbl">q0</text></g>
+            <g><circle cx="184" cy="188" r="22" class="aut-node"/><text x="184" y="188" class="aut-lbl">q1</text></g>
+            <g><circle cx="352" cy="76" r="22" class="aut-node c"/><text x="352" y="76" class="aut-lbl">q2</text></g>
+            <g><circle cx="589" cy="76" r="22" class="aut-node c"/><text x="589" y="76" class="aut-lbl">q4</text></g>
+            <g><circle cx="352" cy="298" r="22" class="aut-node a"/><text x="352" y="298" class="aut-lbl">q3</text></g>
+            <g><circle cx="589" cy="298" r="22" class="aut-node a"/><text x="589" y="298" class="aut-lbl">q5</text></g>
+            <g><circle cx="796" cy="188" r="22" class="aut-node v"/><text x="796" y="188" class="aut-lbl">q6</text></g>
+            <g><circle cx="589" cy="188" r="22" class="aut-node v"/><text x="589" y="188" class="aut-lbl">q7</text></g>
+            <g><circle cx="352" cy="188" r="22" class="aut-node v"/><text x="352" y="188" class="aut-lbl">q8</text></g>
+            <g><circle cx="486" cy="392" r="22" class="aut-node init"/><text x="486" y="392" class="aut-lbl">q9</text></g>
+            <g>
+              <circle cx="738" cy="392" r="23" class="aut-node ok"/>
+              <circle cx="738" cy="392" r="17.5" fill="none" stroke="#22c55e" stroke-width="2"/>
+              <text x="738" y="392" class="aut-lbl">q10</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="zone-strip four">
+          <div class="zone-card" style="border-left:4px solid var(--cyan);"><strong>q2→q4</strong><span>Casa <code>i→I</code></span></div>
+          <div class="zone-card" style="border-left:4px solid var(--amber);"><strong>q3→q5</strong><span>Casa <code>s→S</code></span></div>
+          <div class="zone-card" style="border-left:4px solid var(--violet);"><strong>q6→q8</strong><span>Volta p/ esq.</span></div>
+          <div class="zone-card" style="border-left:4px solid var(--green);"><strong>q9→q10</strong><span>Varre até <code>&gt;</code></span></div>
+        </div>
+      </div>
+
+      <div class="ae-foot">
+        <span>28 transições determinísticas · 384 casos validados diretamente no JFLAP7.1.jar (0 divergências)</span>
+        <span>12 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 13 — VALIDAÇÃO CRUZADA & LIMITAÇÕES
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta green"><span>Evidências Experimentais &amp; Limitações</span><span class="ae-num">13 / 14</span></div>
+        <h2 class="assertion">Zero divergências entre Python e JFLAP 7.1 em 418 casos — com 3 limitações claras.</h2>
+      </div>
+
+      <div class="ae-body" style="gap:18px;">
+        <div class="grid4">
+          <div class="kpi top-c"><span class="num" style="color:var(--cyan);">50/50</span><span class="lbl">Casos da Lauda</span><span class="sub">AP · ALL · INT · LEX</span></div>
+          <div class="kpi top-g"><span class="num" style="color:var(--green);">92/92</span><span class="lbl">Testes pytest</span><span class="sub">Motor + 50 códigos MiniLang</span></div>
+          <div class="kpi top-a"><span class="num" style="color:var(--amber);">418/418</span><span class="lbl">JFLAP7.1.jar</span><span class="sub">0 divergências · 0 não-det.</span></div>
+          <div class="kpi top-v"><span class="num" style="color:var(--violet);">3.280</span><span class="lbl">Exaustivo ALL</span><span class="sub">Todas as cadeias tam. 0..7</span></div>
+        </div>
+
+        <div class="sc-strip">
+          <div class="sc-pill" style="border-left:4px solid var(--green);"><strong>INT-01 (30 chars)</strong><span>AP ✓ · ALL ✓ (201p)</span></div>
+          <div class="sc-pill" style="border-left:4px solid var(--red);"><strong>INT-02 (29 chars)</strong><span>AP ✗ (q2) · ALL SKIP</span></div>
+          <div class="sc-pill" style="border-left:4px solid var(--amber);"><strong>INT-03 (30 chars)</strong><span>AP ✓ · ALL ✗ (q4)</span></div>
+          <div class="sc-pill" style="border-left:4px solid var(--red);"><strong>LEX-01 (22 chars)</strong><span>Erro léxico '@' pos 15</span></div>
+        </div>
+
+        <div class="grid3">
+          <div class="lim-box">
+            <strong>1. Custo O(n²) em fita única</strong>
+            <span>Vai-e-volta do cabeçote: 19 chars exigem 201 passos.</span>
+          </div>
+          <div class="lim-box">
+            <strong>2. Apenas 2 tipos (i, s)</strong>
+            <span>Cada novo tipo (float, bool) soma +2 estados no ALL.</span>
+          </div>
+          <div class="lim-box">
+            <strong>3. Uma assinatura por unidade</strong>
+            <span>Múltiplas funções exigiriam nomes e tabela na fita.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ae-foot">
+        <span>Fonte única de verdade: src/av2/spec.py · Entregáveis da AV1 preservados em archive/av1/</span>
+        <span>13 / 14</span>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         SLIDE 14 — EQUIPE, IA & DEMONSTRAÇÃO AO VIVO
+         ================================================================ -->
+    <section class="slide">
+      <div class="ae-head">
+        <div class="ae-meta green"><span>Transparência &amp; Demonstração Prática</span><span class="ae-num">14 / 14</span></div>
+        <h2 class="assertion">Agora vamos ver a <span class="hi-g">Web IDE</span> e o <span class="hi-c">JFLAP 7.1</span> executando passo a passo.</h2>
+      </div>
+
+      <div class="ae-body" style="gap:20px;">
+        <div class="grid2">
+          <div class="panel top-c" style="padding:18px 22px; gap:10px;">
+            <div class="panel-h"><strong>Divisão da Equipe</strong><span class="tag cyan">CC6NA</span></div>
+            <ul class="pts compact">
+              <li><strong>Andrey Garcia:</strong> motor Python, Web IDE, JFLAP 7.1 e testes.</li>
+              <li><strong>Igor Vilhena:</strong> provas, 50 casos, artigo 2 colunas, slides e limitações.</li>
+            </ul>
+          </div>
+
+          <div class="panel top-v" style="padding:18px 22px; gap:10px;">
+            <div class="panel-h"><strong>Uso de IA</strong><span class="tag violet">DECLARACAO_IA.md</span></div>
+            <ul class="pts compact violet">
+              <li>Apoio na estrutura de código, interface web e revisão textual.</li>
+              <li><strong>100% validado:</strong> provas, 92 testes <code>pytest</code> e 418 no JFLAP.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="live-box">
+          <div style="font-family:var(--mono); font-size:16px; font-weight:800; color:var(--green);">▶ ROTEIRO AO VIVO</div>
+          <div class="live-grid">
+            <div class="live-card">
+              <div class="lc-n">PASSO 1</div>
+              <div class="lc-t">Web IDE</div>
+              <div class="lc-d">4 cenários (<code>./run</code>) + grafos fullscreen (<code>./ap</code>, <code>./all</code>) + <code>./suite</code></div>
+            </div>
+            <div class="big-arrow" style="color:var(--green);">→</div>
+            <div class="live-card">
+              <div class="lc-n">PASSO 2</div>
+              <div class="lc-t">JFLAP 7.1</div>
+              <div class="lc-d"><code>glc.jff</code>, <code>ap.jff</code>, <code>all.jff</code> + validador de 418 casos</div>
+            </div>
+            <div class="big-arrow" style="color:var(--green);">→</div>
+            <div class="live-card">
+              <div class="lc-n">PASSO 3</div>
+              <div class="lc-t">Arguição</div>
+              <div class="lc-d">Prever e testar novas entradas ditadas pelo professor</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ae-foot">
+        <span>Obrigado! · github.com/1drey2drey3drey/MiniLang-Compiler</span>
+        <span>14 / 14</span>
+      </div>
+    </section>
+
+  </main>
 
   <script>
     const slides = Array.from(document.querySelectorAll(".slide"));
+    const deck = document.getElementById("deck");
+    const hudPos = document.getElementById("hud-pos");
     let idx = 0;
+
+    function pad(n) { return String(n).padStart(2, "0"); }
+
+    function fitSlide() {
+      if (!document.body.classList.contains("present-mode")) {
+        deck.style.transform = "";
+        return;
+      }
+      const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1.35);
+      deck.style.transform = `scale(${scale})`;
+    }
+
     function show(i) {
       idx = Math.max(0, Math.min(i, slides.length - 1));
-      slides[idx].scrollIntoView({ behavior: "smooth", block: "start" });
-      document.getElementById("hud-pos").textContent = `${idx + 1} / ${slides.length}`;
+      slides.forEach((s, k) => s.classList.toggle("is-current", k === idx));
+      hudPos.textContent = `${pad(idx + 1)} / ${pad(slides.length)}`;
+      if (document.body.classList.contains("overview-mode")) {
+        slides[idx].scrollIntoView({ behavior: "instant", block: "center" });
+      }
     }
+
     function nav(delta) { show(idx + delta); }
+
+    function toggleMode() {
+      const isPresent = document.body.classList.toggle("present-mode");
+      document.body.classList.toggle("overview-mode", !isPresent);
+      fitSlide();
+      show(idx);
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    }
+
+    window.addEventListener("resize", fitSlide);
     window.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight" || e.key === "PageDown") nav(1);
-      if (e.key === "ArrowLeft" || e.key === "PageUp") nav(-1);
+      if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+        e.preventDefault(); nav(1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault(); nav(-1);
+      } else if (e.key === "g" || e.key === "G") {
+        toggleMode();
+      } else if (e.key === "f" || e.key === "F") {
+        toggleFullscreen();
+      } else if (e.key === "Home") {
+        show(0);
+      } else if (e.key === "End") {
+        show(slides.length - 1);
+      }
     });
+
+    fitSlide();
+    show(0);
   </script>
 </body>
 </html>

@@ -1,26 +1,34 @@
-\chapter{Limitações Observadas, Contribuições e Uso de IA}
+\section{Limitações, Origem, Contribuições e IA}
 
-\section{Limitações Observadas nos Testes}
+\subsection{Limitações Observadas nos Testes}
 
-Durante a execução dos testes e da validação em fita limitada, foram observadas três limitações práticas inerentes à modelagem adotada:
-
+Durante a validação em pilha e fita limitada, identificaram-se três limitações práticas inerentes à modelagem:
 \begin{enumerate}
-    \item \textbf{Complexidade quadrática do ALL em fita única ($O(n^2)$):} como o D-LBA percorre a fita de ida e volta a cada símbolo casado, cadeias longas crescem quadraticamente em número de passos (por exemplo, a cadeia de 19 caracteres \texttt{isisiisis:isisiisis} executa 201 passos, e uma assinatura de 50 parâmetros exige milhares de movimentos do cabeçote).
-    \item \textbf{Subconjunto reduzido de tipos (\texttt{i} e \texttt{s}):} embora a \texttt{MiniLang} da AV1 possua cinco tipos (\texttt{int}, \texttt{float}, \texttt{string}, \texttt{bool}, \texttt{time}), a AV2 restringiu a seção semântica a dois tipos (\texttt{i} e \texttt{s}) para manter o diagrama do ALL limpo (11 estados) e verificável manualmente durante a arguição. Incluir os demais tipos exigiria adicionar um par de estados de transporte/casamento por novo tipo.
-    \item \textbf{Assinatura única por cadeia:} o modelo valida exatamente uma declaração e uma chamada por entrada formal; suportar múltiplas funções declaradas com sobrecarga ou chamadas fora de ordem exigiria alfabeto auxiliar de identificadores e memória adicional na fita limitada.
+    \item \textbf{Complexidade quadrática do ALL em fita única ($O(n^2)$):} o percurso de ida e volta do cabeçote faz o número de passos crescer quadraticamente (a fatia de 19 caracteres \texttt{isisiisis:isisiisis} executa 201 passos).
+    \item \textbf{Subconjunto reduzido de tipos (\texttt{i} e \texttt{s}):} embora a \texttt{MiniLang} da AV1 possua cinco tipos (\texttt{int}, \texttt{float}, \texttt{string}, \texttt{bool}, \texttt{time}), a AV2 restringiu a validação semântica a dois tipos para preservar o D-LBA enxuto (11 estados) e verificável em sala; incluir novos tipos exigiria $+2$ estados por tipo.
+    \item \textbf{Assinatura única por cadeia:} o modelo valida exatamente uma declaração e uma chamada por entrada formal; suportar múltiplas funções exigiria identificadores e memória auxiliar na fita.
 \end{enumerate}
 
-\section{Contribuição de Cada Integrante}
+\subsection{Origem do Código, Diagramas e Exemplos Adaptados}
 
+Em conformidade com as diretrizes de originalidade~\cite{atividade}:
 \begin{itemize}
-    \item \textbf{Andrey Lourival Andrade Garcia:} evolução da especificação \texttt{MiniLang} (\texttt{MiniLang\_AV2\_Guia\_Projeto.md}); implementação do motor formal em Python (\texttt{spec.py}, \texttt{glc.py}, \texttt{ap.py}, \texttt{all\_lba.py}, \texttt{pipeline.py}); desenvolvimento da CLI e da Interface Web Interativa (\texttt{cli.py}, \texttt{web.py}, \texttt{static/}); geração e validação real dos arquivos \texttt{.jff} no \texttt{JFLAP7.1.jar}; suíte automatizada \texttt{pytest} e \texttt{README.md}.
-    \item \textbf{Igor Cecim Vilhena:} pesquisa bibliográfica e fundamentação das provas na Hierarquia de Chomsky (Lema do Bombeamento para $L_1$ e $L_2$); revisão das derivações da GLC e dos 50 casos de teste da lauda; redação e revisão do relatório técnico (\texttt{docs/relatorio\_av2/}); elaboração dos slides (\texttt{docs/apresentacao\_av2/}) e análise das limitações observadas.
+    \item \textbf{Reaproveitado do projeto próprio da AV1 (\texttt{MiniLang-MiniLexer})~\cite{av1}:} módulos léxicos (\texttt{src/automata.py}, \texttt{src/lexer.py}, \texttt{src/patterns.py}, \texttt{src/tokens.py}, \texttt{src/main.py}) usados na projeção do editor \texttt{MiniLang}, e a arquitetura do harness Java de validação no \texttt{JFLAP7.1.jar}.
+    \item \textbf{Criado integralmente para a AV2:} especificação formal (\texttt{MiniLang\_AV2\_Guia\_Projeto.md}), motor formal, CLI e Web IDE em \texttt{src/av2/}, diagramas \texttt{.jff} em \texttt{docs/diagramas/AV2/}, suíte \texttt{tests/test\_av2\_*.py}, \texttt{JflapAv2RuntimeCheck.java}, este artigo e os slides.
+    \item \textbf{Fundamentação teórica:} as provas de não-regularidade e de não-LLC adaptam o Lema do Bombeamento de Sipser~\cite{sipser}, Hopcroft et al.~\cite{hopcroft} e Aho et al.~\cite{aho} ao domínio da \texttt{MiniLang}.
 \end{itemize}
 
-\section{Declaração de Uso de Inteligência Artificial}
+\subsection{Contribuição de Cada Integrante}
 
-Ferramentas de IA (\textbf{Google Antigravity / Gemini} na AV2; \textbf{Claude / ChatGPT} na base preservada da AV1) foram utilizadas como apoio na discussão de propostas originais de linguagem, revisão das demonstrações formais, estruturação do código em Python, da Interface Web Interativa, do validador Java do JFLAP e dos artefatos de documentação. A equipe verificou integralmente todas as transições de $\delta_{\text{AP}}$ e $\delta_{\text{ALL}}$, revisou as provas pelo Lema do Bombeamento e de terminação, executou os \textbf{227 testes no \texttt{pytest}} e validou os arquivos \texttt{glc.jff}, \texttt{ap.jff} e \texttt{all.jff} diretamente no \texttt{JFLAP7.1.jar} com \textbf{0 divergências}.
+\begin{itemize}
+    \item \textbf{Andrey Lourival Andrade Garcia:} especificação \texttt{MiniLang} AV2; motor formal em Python (\texttt{spec.py}, \texttt{glc.py}, \texttt{ap.py}, \texttt{all\_lba.py}, \texttt{pipeline.py}, \texttt{minilang\_source.py}); CLI e Web IDE; geração e validação dos arquivos \texttt{.jff} no \texttt{JFLAP7.1.jar}; suíte \texttt{pytest} e \texttt{README.md}.
+    \item \textbf{Igor Cecim Vilhena:} fundamentação bibliográfica e provas pelo Lema do Bombeamento ($L_1$ e $L_2$); revisão das derivações da GLC e dos 50 casos oficiais; redação e revisão deste artigo técnico (\texttt{docs/relatorio\_av2/}); elaboração dos slides (\texttt{docs/apresentacao\_av2/}) e análise das limitações.
+\end{itemize}
 
-\section{Conclusão}
+\subsection{Declaração de Uso de Inteligência Artificial}
 
-O projeto \texttt{MiniLang-Compiler (AV2)} cumpriu todos os requisitos técnicos, formais e experimentais da atividade, integrando análise léxica (AV1), sintática (GLC + DPDA de 9 estados) e semântica (LSC + D-LBA de 11 estados) em um fluxo coerente, determinístico, reproduzível e validado tanto em Python quanto no simulador oficial do JFLAP 7.1.
+Ferramentas de IA (\textbf{Google Antigravity / Gemini} na AV2; \textbf{Claude / ChatGPT} na base da AV1) foram empregadas como apoio na discussão de propostas originais, revisão das provas, estruturação do código Python, da Web IDE, do validador Java do JFLAP e da documentação (detalhado em \texttt{DECLARACAO\_IA.md}). A equipe verificou integralmente todas as transições de $\delta_{\text{AP}}$ e $\delta_{\text{ALL}}$, revisou as provas matemáticas, executou os \textbf{92 testes automatizados da AV2 no \texttt{pytest}} e validou \texttt{glc.jff}, \texttt{ap.jff} e \texttt{all.jff} no \texttt{JFLAP7.1.jar} com \textbf{0 divergências}.
+
+\subsection{Conclusão}
+
+O projeto \texttt{MiniLang-Compiler (AV2)} cumpriu integralmente os requisitos formais, arquiteturais e experimentais da atividade, integrando análise léxica (AV1), sintática (GLC + DPDA de 9 estados) e semântica (LSC + D-LBA de 11 estados) em um pipeline determinístico, reproduzível e validado tanto em Python quanto no simulador oficial do JFLAP 7.1.

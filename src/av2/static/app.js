@@ -1018,7 +1018,7 @@ async function loadSuite() {
   const data = await resp.json();
   SUITE_ROWS = data.rows;
   document.getElementById("suite-summary-line").textContent =
-    `PASS ${data.passed}/${data.total} · failed=${data.failed} · pytest=227/227 · jflap=418/418`;
+    `PASS ${data.passed}/${data.total} · failed=${data.failed} · pytest=92/92 · jflap=418/418`;
   renderSuite();
 }
 

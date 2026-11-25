@@ -1,6 +1,6 @@
 # MiniLang-Compiler — Analisador Léxico (AV1), Sintático (GLC + AP) e Semântico (LSC + ALL)
 
-Repositório derivado de [`1drey2drey3drey/MiniLang-MiniLexer`](https://github.com/1drey2drey3drey/MiniLang-MiniLexer) (preservando todo o histórico Git e os 135 testes da AV1), evoluído para atender integralmente à **Atividade Prática AV2 de Linguagens Formais e Autômatos** (CESUPA — Turma **CC6NA**, entrega e apresentação em **25/11/2026**).
+Repositório derivado de [`1drey2drey3drey/MiniLang-MiniLexer`](https://github.com/1drey2drey3drey/MiniLang-MiniLexer) (mantendo o `MiniLexer` ativo em `src/` e o histórico/entregáveis da AV1 arquivados em `archive/av1/`), evoluído para atender integralmente à **Atividade Prática AV2 de Linguagens Formais e Autômatos** (CESUPA — Turma **CC6NA**, entrega e apresentação em **25/11/2026**).
 
 - **Equipe:** Andrey Lourival Andrade Garcia e Igor Cecim Vilhena
 - **Docente:** Prof. Daniel Leal Souza
@@ -26,15 +26,13 @@ A aplicação valida cadeias formais da linguagem `MiniLang` em **duas etapas se
 ```text
 MiniLang-Compiler/
 ├── MiniLang_AV2_Guia_Projeto.md     # Especificação formal (fonte de verdade AV2)
-├── MiniLang_Guia_Projeto.md         # Especificação formal preservada (AV1)
 ├── README.md
 ├── COMANDOS_APRESENTACAO.md         # Roteiro de demonstração ao vivo (15 min)
 ├── CONTRIBUICOES.md                 # Registro de contribuições da equipe
 ├── DECLARACAO_IA.md                 # Declaração detalhada de uso de IA
 ├── requirements.txt                 # pytest>=8,<9 (motor e Web UI usam apenas stdlib)
 ├── examples/
-│   ├── av2_cenarios.txt             # Cenários oficiais de integração e erro léxico (AV2)
-│   ├── valido.min / invalido.min    # Exemplos preservados da AV1
+│   └── av2_cenarios.txt             # Cenários oficiais de integração e erro léxico (AV2)
 ├── src/
 │   ├── av2/                         # Motor formal, CLI, Web UI e exportador JFLAP da AV2
 │   │   ├── spec.py                  # Fonte única: GLC, AP (9 estados) e ALL (11 estados)
@@ -47,20 +45,19 @@ MiniLang-Compiler/
 │   │   ├── jflap_io.py              # Gerador e validador XML para JFLAP 7.1
 │   │   ├── cli.py                   # Interface de linha de comando
 │   │   ├── web.py                   # Servidor HTTP stdlib + API JSON
-│   │   └── static/                  # Interface Web Hacker/Shell (7 sessões, grafos SVG, fullscreen)
-│   └── (automata.py, lexer.py, patterns.py, tokens.py, main.py — preservados da AV1)
+│   │   └── static/                  # Interface Web Hacker/Shell (7 abas, grafos SVG, fullscreen)
+│   └── (lexer.py, tokens.py, automata.py, patterns.py — camada léxica da AV1 usada pela AV2)
 ├── docs/
 │   ├── diagramas/AV2/               # glc.jff, ap.jff, all.jff + diagramas Mermaid
-│   ├── diagramas/ER-01..ER-06/      # Diagramas preservados da AV1
-│   ├── relatorio_av2/               # Relatório técnico AV2 (LaTeX modular + HTML para PDF)
-│   └── apresentacao_av2/            # Slides HTML (exportáveis p/ PDF) + guia de arguição
-└── tests/
-    ├── test_av2_glc.py              # Testes da GLC e derivações
-    ├── test_av2_ap.py               # Testes do AP (10+10+2), estrutura e ap.jff
-    ├── test_av2_all.py              # Testes do ALL (10+10+3), fita limitada, exaustivo e all.jff
-    ├── test_av2_pipeline.py         # Integração (3 cenários), erro léxico, CLI e API Web
-    ├── validate_av2_jflap_runtime.py / JflapAv2RuntimeCheck.java  # Validação real no JFLAP 7.1
-    └── (testes preservados da AV1 — 135 testes aprovados)
+│   ├── relatorio_av2/               # Relatório técnico AV2 (LaTeX + relatorio_av2.pdf)
+│   └── apresentacao_av2/            # Slides e guia de arguição individual
+├── tests/
+│   ├── test_av2_glc.py              # Testes da GLC e derivações
+│   ├── test_av2_ap.py               # Testes do AP (10+10+2), estrutura e ap.jff
+│   ├── test_av2_all.py              # Testes do ALL (10+10+3), fita limitada, exaustivo e all.jff
+│   ├── test_av2_pipeline.py         # Integração (3 cenários), erro léxico, CLI, MiniLang e API Web
+│   └── validate_av2_jflap_runtime.py / JflapAv2RuntimeCheck.java  # Validação real no JFLAP 7.1
+└── archive/av1/                     # Entregas históricas preservadas da AV1 (docs, diagramas ER, testes)
 ```
 
 ---
@@ -81,7 +78,7 @@ py -m venv .venv
 .\.venv\Scripts\python.exe -m src.av2.web
 ```
 
-Abre `http://127.0.0.1:8000/` com interface estilo shell/IDE em **7 sessões** (`./run`, `./ap`, `./all`, `./glc`, `./suite`, `./specs`, `./man`):
+Abre `http://127.0.0.1:8000/` com interface estilo shell/IDE em **7 abas** (`./run`, `./ap`, `./all`, `./glc`, `./suite`, `./specs`, `./man`):
 - **Editor `programa.min` + modo `raw` sincronizados:** destaque de erro com sublinhado ondulado estilo IDE (`~~~~`), projeção transparente de tokens do `MiniLexer` (AV1) para $\Sigma_{\text{AP}}$ e faixa visual colorida no modo `raw`;
 - **Grafos SVG interativos dos autômatos (`AP` 9 estados e `ALL` 11 estados)** com destaque em tempo real do estado ativo, da aresta disparada e modo **`⛶ fullscreen`** (com controles de reprodução);
 - Animação passo a passo da **Pilha vertical (AP)**, da **Fita Limitada com `<` e `>` (ALL)** e da **Derivação da GLC**;
@@ -114,7 +111,7 @@ Abre `http://127.0.0.1:8000/` com interface estilo shell/IDE em **7 sessões** (
 .\.venv\Scripts\python.exe -m pytest -v
 ```
 
-Resultado esperado: **227 passed** (135 testes preservados da AV1 + 92 testes da AV2, incluindo enumeração exaustiva de 3.280 cadeias no ALL).
+Resultado esperado: **92 passed** (suíte completa da AV2: GLC, AP, ALL com enumeração exaustiva de 3.280 cadeias, integração, erro léxico, compilador MiniLang, CLI e API Web). Os testes históricos da AV1 estão preservados em `archive/av1/`.
 
 ### 4. Validação Real no Motor Oficial do JFLAP 7.1
 
@@ -138,6 +135,6 @@ JFLAP AV2: 418 casos, 0 divergencias
 
 A modelagem é própria e original (evolução da linguagem `MiniLang` da AV1 para validação sintática de escopos + checagem semântica posicional de assinatura/chamada de função, distinta dos exercícios de sala e do exemplo da lauda).
 
-- **Herdado da AV1 ([`MiniLang-MiniLexer`](https://github.com/1drey2drey3drey/MiniLang-MiniLexer)):** analisador léxico (`src/automata.py`, `src/lexer.py`, `src/patterns.py`, `src/tokens.py`, `src/main.py`), diagramas `docs/diagramas/ER-01..ER-06/`, relatório da AV1 (`docs/relatorio/`), suíte de 135 testes da AV1 e o padrão do harness Java (`tests/JflapRuntimeCheck.java`).
+- **Herdado da AV1 ([`MiniLang-MiniLexer`](https://github.com/1drey2drey3drey/MiniLang-MiniLexer)):** analisador léxico (`src/automata.py`, `src/lexer.py`, `src/patterns.py`, `src/tokens.py`), além do histórico completo arquivado em `archive/av1/` e o padrão do harness Java.
 - **Desenvolvido para a AV2:** todo o pacote `src/av2/` (motor formal `GLC`, `AP`, `ALL`, pipeline, ponte `MiniLang`, CLI e Interface Web Interativa com grafos SVG), `docs/diagramas/AV2/` (`glc.jff`, `ap.jff`, `all.jff` e diagramas Mermaid), `tests/test_av2_*.py`, `tests/JflapAv2RuntimeCheck.java`, `docs/relatorio_av2/` e `docs/apresentacao_av2/`.
-- **Uso de IA:** ferramentas de IA foram utilizadas como apoio na estruturação, implementação e revisão de testes, conforme detalhado em [`DECLARACAO_IA.md`](DECLARACAO_IA.md). Toda a modelagem formal, as provas, os 227 testes automatizados e a validação real nos arquivos `.jff` via `JFLAP7.1.jar` foram verificados pela equipe.
+- **Uso de IA:** ferramentas de IA foram utilizadas como apoio na estruturação, implementação e revisão de testes, conforme detalhado em [`DECLARACAO_IA.md`](DECLARACAO_IA.md). Toda a modelagem formal, as provas, os 92 testes automatizados da AV2 e a validação real nos arquivos `.jff` via `JFLAP7.1.jar` foram verificados pela equipe.

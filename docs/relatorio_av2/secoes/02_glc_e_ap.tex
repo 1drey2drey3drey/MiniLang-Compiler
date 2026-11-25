@@ -1,30 +1,26 @@
-\chapter{Etapa 1 --- Gramática Livre de Contexto e Autômato de Pilha}
+\section{Etapa 1 --- GLC e Autômato de Pilha}
 
-\section{Especificação Formal da GLC ($G$)}
+\subsection{Especificação Formal da GLC ($G$)}
 
-O alfabeto de terminais da Etapa 1 é $\Sigma_{\text{AP}} = \{\texttt{p}, \texttt{\{}, \texttt{\}}, \texttt{(}, \texttt{)}, \texttt{\#}, \texttt{i}, \texttt{s}, \texttt{:}, \texttt{;}\}$. A gramática $G = (V, T, P, S)$ é definida por $V = \{S, B, T, R\}$, $T = \Sigma_{\text{AP}}$, símbolo inicial $S$ e 9 produções LL(1) não-ambíguas:
-
+O alfabeto de terminais da Etapa 1 é $\Sigma_{\text{AP}} = \{\texttt{p}, \texttt{\{}, \texttt{\}}, \texttt{(}, \texttt{)}, \texttt{\#}, \texttt{i}, \texttt{s}, \texttt{:}, \texttt{;}\}$. A gramática $G = (V, T, P, S)$ possui $V = \{S, B, T, R\}$, $T = \Sigma_{\text{AP}}$, símbolo inicial $S$ e 9 produções LL(1) não-ambíguas:
+{\small
 \begin{align*}
-P_1:\quad S &\to \texttt{p\{}\,B\,\texttt{\}\#}\,T\,\texttt{:}\,T\,\texttt{;} \\
-P_2:\quad B &\to \texttt{\{}\,B\,\texttt{\}}\,B \qquad\qquad
-P_3:\quad B \to \texttt{(}\,B\,\texttt{)}\,B \qquad\qquad
-P_4:\quad B \to \varepsilon \\
-P_5:\quad T &\to \texttt{i}\,R \qquad\qquad\qquad
-P_6:\quad T \to \texttt{s}\,R \\
-P_7:\quad R &\to \texttt{i}\,R \qquad\qquad\qquad
-P_8:\quad R \to \texttt{s}\,R \qquad\qquad\qquad
-P_9:\quad R \to \varepsilon
-\end{align*}
+P_1:\; S &\to \texttt{p\{}\,B\,\texttt{\}\#}\,T\,\texttt{:}\,T\,\texttt{;} \\
+P_2:\; B &\to \texttt{\{}\,B\,\texttt{\}}\,B \quad\;\; P_3:\; B \to \texttt{(}\,B\,\texttt{)}\,B \quad\;\; P_4:\; B \to \varepsilon \\
+P_5:\; T &\to \texttt{i}\,R \qquad\quad\; P_6:\; T \to \texttt{s}\,R \\
+P_7:\; R &\to \texttt{i}\,R \qquad\quad\; P_8:\; R \to \texttt{s}\,R \qquad\quad\; P_9:\; R \to \varepsilon
+\end{align*}}
 
-\section{Derivação Passo a Passo de uma Cadeia Aceita ($\ge 18$ caracteres)}
+\subsection{Derivação Passo a Passo (\texttt{INT-01})}
 
-Abaixo apresenta-se a derivação mais à esquerda completa da cadeia aceita \texttt{p\{(())\{\}\}\#isisi:isisi;} (22 caracteres, caso \texttt{AP-A01}), obtida de forma determinística pelo motor \texttt{src/av2/glc.py}:
+A derivação mais à esquerda completa da cadeia \texttt{p\{(())\{\}\}\#isisiisis:isisiisis;} (30 caracteres, cenário \texttt{INT-01}), gerada deterministicamente por \texttt{src/av2/glc.py}, é listada abaixo em 28 passos:
 
-\begin{enumerate}
+{\scriptsize
+\begin{enumerate}[leftmargin=1.7em, itemsep=0.5pt, topsep=2pt]
     \item $S \Rightarrow \texttt{p\{}B\texttt{\}\#}T\texttt{:}T\texttt{;}$ \hfill $[P_1]$
     \item $\Rightarrow \texttt{p\{(}B\texttt{)}B\texttt{\}\#}T\texttt{:}T\texttt{;}$ \hfill $[P_3]$
     \item $\Rightarrow \texttt{p\{((}B\texttt{)}B\texttt{)}B\texttt{\}\#}T\texttt{:}T\texttt{;}$ \hfill $[P_3]$
-    \item $\Rightarrow \texttt{p\{(())}B\texttt{)}B\texttt{\}\#}T\texttt{:}T\texttt{;}$ \hfill $[P_4]$
+    \item $\Rightarrow \texttt{p\{(()}B\texttt{)}B\texttt{\}\#}T\texttt{:}T\texttt{;}$ \hfill $[P_4]$
     \item $\Rightarrow \texttt{p\{(())}B\texttt{\}\#}T\texttt{:}T\texttt{;}$ \hfill $[P_4]$
     \item $\Rightarrow \texttt{p\{(())\{}B\texttt{\}}B\texttt{\}\#}T\texttt{:}T\texttt{;}$ \hfill $[P_2]$
     \item $\Rightarrow \texttt{p\{(())\{\}}B\texttt{\}\#}T\texttt{:}T\texttt{;}$ \hfill $[P_4]$
@@ -34,52 +30,98 @@ Abaixo apresenta-se a derivação mais à esquerda completa da cadeia aceita \te
     \item $\Rightarrow \texttt{p\{(())\{\}\}\#isi}R\texttt{:}T\texttt{;}$ \hfill $[P_7]$
     \item $\Rightarrow \texttt{p\{(())\{\}\}\#isis}R\texttt{:}T\texttt{;}$ \hfill $[P_8]$
     \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisi}R\texttt{:}T\texttt{;}$ \hfill $[P_7]$
-    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisi:}T\texttt{;}$ \hfill $[P_9]$
-    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisi:i}R\texttt{;}$ \hfill $[P_5]$
-    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisi:is}R\texttt{;}$ \hfill $[P_8]$
-    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisi:isi}R\texttt{;}$ \hfill $[P_7]$
-    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisi:isis}R\texttt{;}$ \hfill $[P_8]$
-    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisi:isisi}R\texttt{;}$ \hfill $[P_7]$
-    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisi:isisi;}$ \hfill $[P_9]$
-\end{enumerate}
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisii}R\texttt{:}T\texttt{;}$ \hfill $[P_7]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiis}R\texttt{:}T\texttt{;}$ \hfill $[P_8]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisi}R\texttt{:}T\texttt{;}$ \hfill $[P_7]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis}R\texttt{:}T\texttt{;}$ \hfill $[P_8]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:}T\texttt{;}$ \hfill $[P_9]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:i}R\texttt{;}$ \hfill $[P_5]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:is}R\texttt{;}$ \hfill $[P_8]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:isi}R\texttt{;}$ \hfill $[P_7]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:isis}R\texttt{;}$ \hfill $[P_8]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:isisi}R\texttt{;}$ \hfill $[P_7]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:isisii}R\texttt{;}$ \hfill $[P_7]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:isisiis}R\texttt{;}$ \hfill $[P_8]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:isisiisi}R\texttt{;}$ \hfill $[P_7]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:isisiisis}R\texttt{;}$ \hfill $[P_8]$
+    \item $\Rightarrow \texttt{p\{(())\{\}\}\#isisiisis:isisiisis;}$ \hfill $[P_9]$
+\end{enumerate}}
 
-\section{Especificação Formal do Autômato de Pilha ($M_{\text{AP}}$ --- 9 estados)}
+\subsection{Autômato de Pilha ($M_{\text{AP}}$ --- 9 estados)}
 
 Define-se $M_{\text{AP}} = (Q_{\text{AP}}, \Sigma_{\text{AP}}, \Gamma_{\text{AP}}, \delta_{\text{AP}}, q_0, Z, F_{\text{AP}})$ com:
 \begin{itemize}
-    \item \textbf{Estados (9 estados $\ge 8$):} $Q_{\text{AP}} = \{q_0, q_1, q_2, q_3, q_4, q_5, q_6, q_7, q_8\}$;
-    \item \textbf{Alfabeto de entrada:} $\Sigma_{\text{AP}} = \{\texttt{p}, \texttt{\{}, \texttt{\}}, \texttt{(}, \texttt{)}, \texttt{\#}, \texttt{i}, \texttt{s}, \texttt{:}, \texttt{;}\}$;
-    \item \textbf{Alfabeto da pilha:} $\Gamma_{\text{AP}} = \{Z, \texttt{\{}, \texttt{(}\}$ (com símbolo inicial $Z$);
-    \item \textbf{Configuração inicial:} $(q_0, x, Z)$;
-    \item \textbf{Critério de aceitação:} aceitação por \textbf{estado final} ($F_{\text{AP}} = \{q_8\}$) com \textbf{consumo integral da entrada} (e pilha final igual a $Z$).
+    \item \textbf{Estados (9 $\ge 8$):} $Q_{\text{AP}} = \{q_0, q_1, \dots, q_8\}$, inicial $q_0$, final $F_{\text{AP}} = \{q_8\}$;
+    \item \textbf{Pilha:} $\Gamma_{\text{AP}} = \{Z, \texttt{\{}, \texttt{(}\}$ (topo inicial $Z$);
+    \item \textbf{Aceitação:} por \textbf{estado final} ($q_8$) com \textbf{consumo integral da entrada} e pilha final $Z$.
 \end{itemize}
 
-\begin{table}[ht]
+\begin{figure*}[t]
 \centering
-\caption{Função de transição $\delta_{\text{AP}}(q, a, X) = (q', \gamma)$ do DPDA de 9 estados.}
-\small
+\resizebox{0.92\textwidth}{!}{%
+\begin{tikzpicture}[
+    >=Stealth,
+    node distance=2.3cm,
+    every state/.style={thick, minimum size=1.0cm, font=\small\ttfamily},
+    every edge/.style={draw, ->, thick},
+    lbl/.style={font=\scriptsize\ttfamily, align=center}
+]
+    \node[state, initial, initial text=] (q0) {q0};
+    \node[state, right of=q0] (q1) {q1};
+    \node[state, right=2.1cm of q1] (q2) {q2};
+    \node[state, right=2.1cm of q2] (q3) {q3};
+    \node[state, right of=q3] (q4) {q4};
+    \node[state, right of=q4] (q5) {q5};
+    \node[state, below=2.0cm of q5] (q6) {q6};
+    \node[state, left=2.5cm of q6] (q7) {q7};
+    \node[state, accepting, left=2.5cm of q7] (q8) {q8};
+
+    \path
+        (q0) edge node[above, lbl] {p,Z/Z} (q1)
+        (q1) edge node[above, lbl] {\{,Z/\{Z} (q2)
+        (q2) edge[loop above, min distance=11mm] node[above, lbl] {\{,\{/\{\{ \,|\, \{,(/\{( \\ (,\{/(\{ \,|\, (,(/(( \\ \},\{/$\varepsilon$ \,|\, ),(/$\varepsilon$} (q2)
+        (q2) edge node[above, lbl] {$\varepsilon$,Z/Z} (q3)
+        (q3) edge node[above, lbl] {\#,Z/Z} (q4)
+        (q4) edge node[above, lbl] {i,Z/Z \\ s,Z/Z} (q5)
+        (q5) edge[loop above, min distance=9mm] node[above, lbl] {i,Z/Z \,|\, s,Z/Z} (q5)
+        (q5) edge node[right, lbl] {:,Z/Z} (q6)
+        (q6) edge node[above, lbl] {i,Z/Z \,|\, s,Z/Z} (q7)
+        (q7) edge[loop below, min distance=9mm] node[below, lbl] {i,Z/Z \,|\, s,Z/Z} (q7)
+        (q7) edge node[above, lbl] {;,Z/Z} (q8);
+\end{tikzpicture}%
+}
+\caption{Diagrama de estados do DPDA $M_{\text{AP}}$ (9 estados, equivalente a \texttt{docs/diagramas/AV2/ap.jff}).}
+\label{fig:ap}
+\end{figure*}
+
+\begin{table}[t]
+\centering
+\caption{Função de transição $\delta_{\text{AP}}(q, a, X) = (q', \gamma)$ do DPDA.}
+\label{tab:ap_delta}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}lllll@{}}
 \toprule
-Estado & Lê & Desempilha & Destino & Empilha (topo à esq.) \\
+Est. & Lê & Pop & Dest. & Push (topo à esq.) \\
 \midrule
 $q_0$ & \texttt{p} & $Z$ & $q_1$ & $Z$ \\
 $q_1$ & \texttt{\{} & $Z$ & $q_2$ & \texttt{\{}$Z$ \\
-$q_2$ & \texttt{\{} & \texttt{\{} / \texttt{(} & $q_2$ & \texttt{\{\{} / \texttt{\{(} \\
-$q_2$ & \texttt{(} & \texttt{\{} / \texttt{(} & $q_2$ & \texttt{(\{} / \texttt{((} \\
+$q_2$ & \texttt{\{} & \texttt{\{}/\texttt{(} & $q_2$ & \texttt{\{\{}/\texttt{\{(} \\
+$q_2$ & \texttt{(} & \texttt{\{}/\texttt{(} & $q_2$ & \texttt{(\{}/\texttt{((} \\
 $q_2$ & \texttt{\}} & \texttt{\{} & $q_2$ & $\varepsilon$ \\
 $q_2$ & \texttt{)} & \texttt{(} & $q_2$ & $\varepsilon$ \\
 $q_2$ & $\varepsilon$ & $Z$ & $q_3$ & $Z$ \\
 $q_3$ & \texttt{\#} & $Z$ & $q_4$ & $Z$ \\
-$q_4$ & \texttt{i} / \texttt{s} & $Z$ & $q_5$ & $Z$ \\
-$q_5$ & \texttt{i} / \texttt{s} & $Z$ & $q_5$ & $Z$ \\
+$q_4$ & \texttt{i}/\texttt{s} & $Z$ & $q_5$ & $Z$ \\
+$q_5$ & \texttt{i}/\texttt{s} & $Z$ & $q_5$ & $Z$ \\
 $q_5$ & \texttt{:} & $Z$ & $q_6$ & $Z$ \\
-$q_6$ & \texttt{i} / \texttt{s} & $Z$ & $q_7$ & $Z$ \\
-$q_7$ & \texttt{i} / \texttt{s} & $Z$ & $q_7$ & $Z$ \\
+$q_6$ & \texttt{i}/\texttt{s} & $Z$ & $q_7$ & $Z$ \\
+$q_7$ & \texttt{i}/\texttt{s} & $Z$ & $q_7$ & $Z$ \\
 $q_7$ & \texttt{;} & $Z$ & $q_8$ & $Z$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Justificativa da Equivalência $L(G) = L(M_{\text{AP}})$}
+\subsection{Equivalência $L(G) = L(M_{\text{AP}})$}
 
-Os estados $q_0$ e $q_1$ impõem exatamente o prefixo \texttt{p\{} de $P_1$, empilhando \texttt{\{} sobre $Z$. Enquanto o escopo principal permanece aberto, a pilha em $q_2$ mantém o invariante de armazenar, acima de $Z$, exatamente a sequência de delimitadores \texttt{\{} e \texttt{(} abertos e ainda não fechados, o que corresponde biunivocamente às derivações de $B$ ($P_2, P_3, P_4$) até o fechamento do \texttt{\}} externo de $P_1$. Nesse exato instante o topo retorna a $Z$, habilitando exclusivamente a transição determinística $(q_2, \varepsilon, Z) \to (q_3, Z)$. Por fim, $q_3 \to q_4 \to q_5$ reconhece \texttt{\#} seguido de $\{\texttt{i},\texttt{s}\}^+$ (gerado por $T$ e $R$ via $P_5$--$P_9$), $q_5 \to q_6 \to q_7$ reconhece \texttt{:} seguido de $\{\texttt{i},\texttt{s}\}^+$ e $q_7 \to q_8$ consome \texttt{;}. Como $q_8$ não possui transições de saída, exige-se consumo integral da entrada. Logo $L(M_{\text{AP}}) = L(G)$.
+Os estados $q_0$ e $q_1$ impõem exatamente o prefixo \texttt{p\{} de $P_1$, empilhando \texttt{\{} sobre $Z$. Enquanto o escopo principal permanece aberto, a pilha em $q_2$ mantém o invariante de armazenar, acima de $Z$, exatamente a sequência de delimitadores \texttt{\{} e \texttt{(} ainda não fechados, o que corresponde biunivocamente às derivações de $B$ ($P_2$--$P_4$) até o fechamento do \texttt{\}} externo de $P_1$. Nesse instante o topo retorna a $Z$, habilitando exclusivamente a transição determinística $(q_2, \varepsilon, Z) \to (q_3, Z)$. Por fim, $q_3 \to q_4 \to q_5$ reconhece \texttt{\#} seguido de $\{\texttt{i},\texttt{s}\}^+$ ($T, R$ via $P_5$--$P_9$), $q_5 \to q_6 \to q_7$ reconhece \texttt{:} seguido de $\{\texttt{i},\texttt{s}\}^+$ e $q_7 \to q_8$ consome \texttt{;}. Como $q_8$ não possui saídas, exige-se consumo integral da entrada. Logo $L(M_{\text{AP}}) = L(G)$.

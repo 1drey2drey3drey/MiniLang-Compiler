@@ -1,22 +1,81 @@
-\chapter{Etapa 2 --- Linguagem Sensível ao Contexto e Autômato Linearmente Limitado}
+\section{Etapa 2 --- LSC e Autômato Linearmente Limitado}
 
-\section{Especificação Formal do ALL ($M_{\text{ALL}}$ --- 11 estados)}
+\subsection{Especificação Formal do ALL ($M_{\text{ALL}}$ --- 11 estados)}
 
-Quando o AP aceita a cadeia de entrada, o pipeline extrai a fatia semântica $x = w\texttt{:}u$ delimitada entre \texttt{\#} e \texttt{;} e a posiciona sobre a fita limitada do ALL $M_{\text{ALL}} = (Q_{\text{ALL}}, \Sigma_{\text{ALL}}, \Gamma_{\text{ALL}}, \texttt{<}, \texttt{>}, \delta_{\text{ALL}}, q_0, F_{\text{ALL}})$:
-
+Quando o AP aceita a entrada, o pipeline extrai a fatia semântica $x = w\texttt{:}u$ entre \texttt{\#} e \texttt{;} e a posiciona sobre a fita limitada do ALL:
+\[
+M_{\text{ALL}} = (Q_{\text{ALL}}, \Sigma_{\text{ALL}}, \Gamma_{\text{ALL}}, \texttt{<}, \texttt{>}, \delta_{\text{ALL}}, q_0, F_{\text{ALL}})
+\]
+com os seguintes componentes:
 \begin{itemize}
-    \item \textbf{Estados (11 estados $\ge 8$):} $Q_{\text{ALL}} = \{q_0, q_1, q_2, q_3, q_4, q_5, q_6, q_7, q_8, q_9, q_{10}\}$, com $F_{\text{ALL}} = \{q_{10}\}$;
-    \item \textbf{Alfabeto de entrada:} $\Sigma_{\text{ALL}} = \{\texttt{i}, \texttt{s}, \texttt{:}\}$;
-    \item \textbf{Alfabeto da fita:} $\Gamma_{\text{ALL}} = \{\texttt{<}, \texttt{>}, \texttt{i}, \texttt{s}, \texttt{:}, \texttt{I}, \texttt{S}\}$;
-    \item \textbf{Fita estritamente limitada:} para $|x| = n$, a fita possui exatamente $n$ células graváveis (índices $1 \dots n$) e dois marcadores de borda fixos: \texttt{<} na célula $0$ e \texttt{>} na célula $n+1$;
-    \item \textbf{Configuração inicial:} estado $q_0$, fita $\texttt{<} x \texttt{>}$, cabeçote na posição $0$ (compatível com o simulador de MT do JFLAP 7.1);
-    \item \textbf{Aceitação e rejeição:} aceita ao atingir o estado final $q_{10}$ (sem transições de saída); rejeita ao parar em qualquer estado $q \notin F_{\text{ALL}}$ sem transição aplicável.
+    \item \textbf{Estados (11 $\ge 8$):} $Q_{\text{ALL}} = \{q_0, q_1, \dots, q_{10}\}$, final $F_{\text{ALL}} = \{q_{10}\}$;
+    \item \textbf{Alfabetos:} $\Sigma_{\text{ALL}} = \{\texttt{i}, \texttt{s}, \texttt{:}\}$ e $\Gamma_{\text{ALL}} = \{\texttt{<}, \texttt{>}, \texttt{i}, \texttt{s}, \texttt{:}, \texttt{I}, \texttt{S}\}$;
+    \item \textbf{Fita estritamente limitada:} para $|x| = n$, existem exatamente $n$ células graváveis (índices $1 \dots n$) e dois marcadores de borda fixos: \texttt{<} na célula $0$ e \texttt{>} na célula $n+1$;
+    \item \textbf{Configuração inicial:} estado $q_0$, fita $\texttt{<}x\texttt{>}$, cabeçote na célula $0$ (compatível com o simulador de MT do JFLAP 7.1);
+    \item \textbf{Decisão:} aceita em $q_{10}$ (sem transições de saída); rejeita ao parar em qualquer estado $q \notin F_{\text{ALL}}$ sem transição definida.
 \end{itemize}
 
-\begin{table}[ht]
+\begin{figure*}[t]
+\centering
+\resizebox{0.92\textwidth}{!}{%
+\begin{tikzpicture}[
+    >=Stealth,
+    every state/.style={thick, minimum size=1.0cm, font=\small\ttfamily},
+    every edge/.style={draw, ->, thick},
+    lbl/.style={font=\scriptsize\ttfamily, align=center}
+]
+    \node[state, initial, initial text=] (q0) at (0, 0) {q0};
+    \node[state] (q1) at (2.2, 0) {q1};
+    \node[state] (q8) at (5.6, 0) {q8};
+    \node[state] (q7) at (9.6, 0) {q7};
+    \node[state] (q6) at (13.2, 0) {q6};
+
+    \node[state] (q2) at (5.6, 2.5) {q2};
+    \node[state] (q4) at (9.6, 2.5) {q4};
+
+    \node[state] (q3) at (5.6, -2.5) {q3};
+    \node[state] (q5) at (9.6, -2.5) {q5};
+
+    \node[state] (q9) at (8.0, -4.9) {q9};
+    \node[state, accepting] (q10) at (12.0, -4.9) {q10};
+
+    \path
+        (q0) edge node[above, lbl] {<$\to$<,R} (q1)
+        (q1) edge node[above left, lbl] {i$\to$I,R} (q2)
+        (q1) edge node[below left, lbl] {s$\to$S,R} (q3)
+
+        (q2) edge[loop above, min distance=8mm] node[above, lbl] {i$\to$i,R \,|\, s$\to$s,R} (q2)
+        (q2) edge node[above, lbl] {:$\to$:,R} (q4)
+        (q4) edge[loop above, min distance=8mm] node[above, lbl] {I$\to$I,R \,|\, S$\to$S,R} (q4)
+        (q4) edge node[above right, lbl] {i$\to$I,L} (q6)
+
+        (q3) edge[loop below, min distance=8mm] node[below, lbl] {i$\to$i,R \,|\, s$\to$s,R} (q3)
+        (q3) edge node[above, lbl] {:$\to$:,R} (q5)
+        (q5) edge[loop below, min distance=8mm] node[below, lbl] {I$\to$I,R \,|\, S$\to$S,R} (q5)
+        (q5) edge node[below right, lbl] {s$\to$S,L} (q6)
+
+        (q6) edge[loop right, min distance=8mm] node[right, lbl] {I$\to$I,L \\ S$\to$S,L} (q6)
+        (q6) edge node[above, lbl] {:$\to$:,L} (q7)
+        (q7) edge[loop above, min distance=7mm] node[above, lbl] {i$\to$i,L \,|\, s$\to$s,L} (q7)
+        (q7) edge node[above, lbl] {I$\to$I,R \,|\, S$\to$S,R} (q8)
+
+        (q8) edge node[left, lbl] {i$\to$I,R} (q2)
+        (q8) edge node[left, lbl] {s$\to$S,R} (q3)
+        (q8) edge[bend left=18] node[right, pos=0.62, lbl] {:$\to$:,R} (q9)
+        (q9) edge[loop below, min distance=8mm] node[below, lbl] {I$\to$I,R \,|\, S$\to$S,R} (q9)
+        (q9) edge node[above, lbl] {>$\to$>,L} (q10);
+\end{tikzpicture}%
+}
+\caption{Diagrama de estados do D-LBA $M_{\text{ALL}}$ (11 estados, equivalente a \texttt{docs/diagramas/AV2/all.jff}).}
+\label{fig:all}
+\end{figure*}
+
+\begin{table*}[t]
 \centering
 \caption{Função de transição $\delta_{\text{ALL}}(q, X) = (q', Y, D)$ do D-LBA de 11 estados.}
-\small
+\label{tab:all_delta}
+\footnotesize
+\setlength{\tabcolsep}{6pt}
 \begin{tabular}{@{}llllll@{}}
 \toprule
 Estado & Lê & Destino & Escreve & Mov. & Papel semântico \\
@@ -33,8 +92,8 @@ $q_8$ & \texttt{i} / \texttt{s} / \texttt{:} & $q_2$ / $q_3$ / $q_9$ & \texttt{I
 $q_9$ & \texttt{I}, \texttt{S} / \texttt{>} & $q_9$ / $q_{10}$ & mesmo & R / L & Confirma ausência de sobras até \texttt{>} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
-\section{Garantia de Respeito aos Limites da Fita}
+\subsection{Garantia de Respeito aos Limites da Fita}
 
-Em nenhuma transição do ALL o símbolo \texttt{<} ou \texttt{>} é sobrescrito, tampouco algum símbolo interno é substituído por marcador de borda. A única transição sobre \texttt{<} é $\delta(q_0, \texttt{<}) = (q_1, \texttt{<}, R)$ (move para dentro da fita) e a única transição sobre \texttt{>} é $\delta(q_9, \texttt{>}) = (q_{10}, \texttt{>}, L)$ (retorna para a célula $n$ e aceita). No retorno à esquerda em $q_7$, existe sempre ao menos um símbolo já marcado (\texttt{I} ou \texttt{S}) à direita de \texttt{<}, garantindo que o cabeçote reverte para $q_8$ antes de sequer alcançar a borda esquerda. No simulador em Python (\texttt{src/av2/all\_lba.py}) e no harness Java do JFLAP (\texttt{tests/JflapAv2RuntimeCheck.java}), asserções em tempo de execução confirmam em cada passo que $0 \le \text{cabeçote} \le n + 1$ e que \texttt{<} e \texttt{>} permanecem intactos.
+Em nenhuma transição do ALL o símbolo \texttt{<} ou \texttt{>} é sobrescrito, tampouco algum símbolo interno é substituído por marcador de borda. A única transição sobre \texttt{<} é $\delta(q_0, \texttt{<}) = (q_1, \texttt{<}, R)$ (move para dentro da fita) e a única transição sobre \texttt{>} é $\delta(q_9, \texttt{>}) = (q_{10}, \texttt{>}, L)$ (retorna para a célula $n$ e aceita). No retorno à esquerda em $q_7$, existe sempre ao menos um símbolo já marcado (\texttt{I} ou \texttt{S}) à direita de \texttt{<}, garantindo que o cabeçote reverta para $q_8$ antes de alcançar a borda esquerda. Tanto em \texttt{src/av2/all\_lba.py} quanto em \texttt{tests/JflapAv2RuntimeCheck.java}, asserções em tempo de execução confirmam a cada passo que $0 \le \text{cabeçote} \le n + 1$ e que \texttt{<} e \texttt{>} permanecem intactos.

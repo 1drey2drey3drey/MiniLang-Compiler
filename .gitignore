@@ -30,3 +30,12 @@ dist/
 
 # Local/generated archives
 *.zip
+
+# LaTeX & Java temp artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.class

@@ -1,14 +1,16 @@
-\chapter{Testes Obrigatórios e Análise dos Resultados}
+\section{Testes Obrigatórios e Análise dos Resultados}
 
-Todos os testes exigidos pela atividade~\cite{atividade} foram executados automaticamente via \texttt{pytest} (227 testes aprovados: 135 da AV1 + 92 da AV2), via CLI (\texttt{python -m src.av2.cli --suite}) e validados em runtime diretamente no simulador oficial do \texttt{JFLAP7.1.jar} (\textbf{418 casos, 0 divergências}). Além das tabelas abaixo, o ALL foi validado exaustivamente contra a especificação matemática $L_2$ em todas as \textbf{3.280 cadeias} de comprimento $0 \dots 7$ sobre $\{\texttt{i}, \texttt{s}, \texttt{:}\}$.
+Todos os 50 casos exigidos pela atividade~\cite{atividade} foram executados automaticamente via \texttt{pytest} (\textbf{92 testes automatizados da AV2 aprovados}; entregas históricas da AV1 arquivadas em \texttt{archive/av1/}), via CLI (\texttt{python -m src.av2.cli --suite}) e validados em runtime diretamente no simulador oficial do \texttt{JFLAP7.1.jar} (\textbf{418 casos, 0 divergências}). Além das Tabelas~\ref{tab:casos_ap}--\ref{tab:casos_int}, o ALL foi validado exaustivamente contra a especificação matemática $L_2$ em todas as \textbf{3.280 cadeias} de comprimento $0 \dots 7$ sobre $\{\texttt{i}, \texttt{s}, \texttt{:}\}$.
 
-\section{Testes Isolados do AP (10 aceitas + 10 rejeitadas + 2 casos-limite)}
-{\scriptsize
-\begin{longtable}{@{}llccp{6.4cm}@{}}
+\begin{table*}[t]
+\centering
+\caption{Testes isolados do AP (10 aceitas + 10 rejeitadas + 2 casos-limite).}
+\label{tab:casos_ap}
+\scriptsize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}llccX@{}}
 \toprule
 ID & Entrada & Esp. & Obt. & Regra verificada \\
 \midrule
-\endhead
 AP-A01 & \texttt{p\{(())\{\}\}\#isisi:isisi;} & Aceita & Aceita & Aninhamento misto de blocos e expressões com assinatura e chamada válidas (22 chars). \\
 AP-A02 & \texttt{p\{((()))\}\#isisis:sisi;} & Aceita & Aceita & Parênteses profundamente aninhados; AP aceita mesmo com aridades diferentes (22 chars). \\
 AP-A03 & \texttt{p\{\{(\{\})\}\}\#iiisss:ssii;} & Aceita & Aceita & Escopos aninhados em 3 níveis com expressão interna e tipos variados (22 chars). \\
@@ -16,7 +18,7 @@ AP-A04 & \texttt{p\{()()()\}\#sisisi:isii;} & Aceita & Aceita & Três expressõe
 AP-A05 & \texttt{p\{\{\}()\{\}\}\#iissii:siss;} & Aceita & Aceita & Combinação sequencial de sub-blocos vazios e expressão vazia (22 chars). \\
 AP-A06 & \texttt{p\{(\{()\})\}\#ssssss:iiii;} & Aceita & Aceita & Alternância estrita entre parênteses e chaves em 4 níveis de pilha (22 chars). \\
 AP-A07 & \texttt{p\{(())\{\}\}\#isisiisis:isisiisis;} & Aceita & Aceita & Cadeia completa reaproveitada na integração (cenário aceito por ambos, 30 chars). \\
-AP-A08 & \texttt{p\{(())\{\}\}\#isisiisis:isisiissi;} & Aceita & Aceita & Sintaxe correta com ordem de tipos trocada — AP aceita (cenário 3 de integração, 30 chars). \\
+AP-A08 & \texttt{p\{(())\{\}\}\#isisiisis:isisiissi;} & Aceita & Aceita & Sintaxe correta com ordem de tipos trocada --- AP aceita (cenário 3 de integração, 30 chars). \\
 AP-A09 & \texttt{p\{\{\{()\}\}\}\#is:isisiisis;} & Aceita & Aceita & Escopo triplo com assinatura curta e chamada longa (23 chars). \\
 AP-A10 & \texttt{p\{(\{\})()\}\#iiiiiiii:ss;} & Aceita & Aceita & Escopo com bloco contendo expressão seguida de expressão irmã (22 chars). \\
 AP-R01 & \texttt{p\{(())\{\}\#isisiisis:isisiisis;} & Rejeita & Rejeita & Chave '\{' do escopo principal não fechada antes de '\#' (cenário 2 de integração, 29 chars). \\
@@ -32,15 +34,18 @@ AP-R10 & \texttt{p\{(())\{\}\}\#is:is:isisis;} & Rejeita & Rejeita & Separador '
 AP-L01 & \texttt{\textquotedbl\textquotedbl} & Rejeita & Rejeita & Caso-limite: cadeia vazia (rejeitada sem consumir entrada, permanece em q0). \\
 AP-L02 & \texttt{p\{\}\#i:i;} & Aceita & Aceita & Caso-limite: menor cadeia aceita pela GLC e pelo AP (8 caracteres). \\
 \bottomrule
-\end{longtable}}
+\end{tabularx}
+\end{table*}
 
-\section{Testes Isolados do ALL (10 aceitas + 10 rejeitadas + 3 casos-limite)}
-{\scriptsize
-\begin{longtable}{@{}llccp{6.6cm}@{}}
+\begin{table*}[t]
+\centering
+\caption{Testes isolados do ALL (10 aceitas + 10 rejeitadas + 3 casos-limite).}
+\label{tab:casos_all}
+\scriptsize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}llccX@{}}
 \toprule
 ID & Entrada & Esp. & Obt. & Regra verificada \\
 \midrule
-\endhead
 ALL-A01 & \texttt{isisiisis:isisiisis} & Aceita & Aceita & Cópia exata de 9 parâmetros mistos (reaproveitada na integração, 19 chars). \\
 ALL-A02 & \texttt{iiiiiiiii:iiiiiiiii} & Aceita & Aceita & Nove parâmetros homogêneos do tipo 'i' (int) idênticos (19 chars). \\
 ALL-A03 & \texttt{sssssssss:sssssssss} & Aceita & Aceita & Nove parâmetros homogêneos do tipo 's' (string) idênticos (19 chars). \\
@@ -65,31 +70,156 @@ ALL-L01 & \texttt{\textquotedbl\textquotedbl} & Rejeita & Rejeita & Caso-limite:
 ALL-L02 & \texttt{:} & Rejeita & Rejeita & Caso-limite: apenas o separador ':' sem tipos em nenhum lado (fita '<:>'). \\
 ALL-L03 & \texttt{i:i} & Aceita & Aceita & Caso-limite: menor cadeia aceita pelo ALL (3 células graváveis + 2 marcadores fixos). \\
 \bottomrule
-\end{longtable}}
+\end{tabularx}
+\end{table*}
 
-\section{Testes de Integração (Fluxo Completo AP $\to$ ALL)}
-{\scriptsize
-\begin{longtable}{@{}llccp{5.4cm}@{}}
+\begin{table*}[t]
+\centering
+\caption{Testes de integração do pipeline completo (AP $\to$ ALL).}
+\label{tab:casos_int}
+\scriptsize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}llccX@{}}
 \toprule
 ID & Entrada & Esp. & Obt. (Parada) & Regra verificada \\
 \midrule
-\endhead
 INT-01 & \texttt{p\{(())\{\}\}\#isisiisis:isisiisis;} & Aceita & Aceita (CONCLUIDO) & Cenário 1: AP aceita a estrutura sintática e ALL aceita a assinatura/chamada idêntica. \\
 INT-02 & \texttt{p\{(())\{\}\#isisiisis:isisiisis;} & Rejeita & Rejeita (AP) & Cenário 2: AP rejeita por '\{' não fechado; ALL não é executado. \\
 INT-03 & \texttt{p\{(())\{\}\}\#isisiisis:isisiissi;} & Rejeita & Rejeita (ALL) & Cenário 3: AP aceita a sintaxe, mas ALL rejeita pela troca posicional dos tipos finais. \\
 \bottomrule
-\end{longtable}}
+\end{tabularx}
+\end{table*}
 
-\section{Testes com Símbolo Fora do Alfabeto (Erro Léxico)}
+\subsection{Testes com Símbolo Fora do Alfabeto (Erro Léxico)}
 \begin{itemize}
-    \item \textbf{LEX-01} --- Entrada: \texttt{p\{(())\{\}\}\#isisi@isisi;}. Mensagem exibida: \texttt{Erro léxico (AP): símbolo inválido '@' na posição 15. Alfabeto aceito Σ\_AP = \{p, \{, \}, (, ), \#, i, s, :, ;\}.}
-    \item \textbf{LEX-02} --- Entrada: \texttt{isisiisis\$isisiisis}. Mensagem exibida: \texttt{Erro léxico (ALL): símbolo inválido '\$' na posição 9. Alfabeto aceito Σ\_ALL = \{i, s, :\}.}
+    \item \textbf{LEX-01} --- Entrada: \texttt{p\{(())\{\}\}\#isisi@isisi;}. Saída: \texttt{Erro léxico (AP): símbolo inválido '@' na posição 15. Alfabeto aceito $\Sigma$\_AP = \{p, \{, \}, (, ), \#, i, s, :, ;\}.}
+    \item \textbf{LEX-02} --- Entrada: \texttt{isisiisis\$isisiisis}. Saída: \texttt{Erro léxico (ALL): símbolo inválido '\$' na posição 9. Alfabeto aceito $\Sigma$\_ALL = \{i, s, :\}.}
 \end{itemize}
 
-\section{Validação Cruzada no JFLAP 7.1}
+\subsection{Validação Cruzada no JFLAP 7.1}
 O script \texttt{tests/validate\_av2\_jflap\_runtime.py} executa \texttt{glc.jff}, \texttt{ap.jff} e \texttt{all.jff} diretamente sobre o \texttt{JFLAP7.1.jar}, confirmando:
 \begin{itemize}
     \item \texttt{glc.jff}: 9 produções carregadas sem erro pelo \texttt{XMLCodec};
     \item \texttt{ap.jff}: 9 estados, \textbf{0 estados não-determinísticos} (via \texttt{PDANondeterminismDetector}), 34 casos, \textbf{0 divergências};
     \item \texttt{all.jff}: 11 estados, 384 casos (oficiais + enumeração completa até tamanho 5), com asserção de limites de fita no \texttt{TMSimulator}, \textbf{0 divergências}.
 \end{itemize}
+
+\subsection{Rastreamento Passo a Passo (Execuções Reais)}
+As Tabelas~\ref{tab:trace_ap}, \ref{tab:trace_all_min} e \ref{tab:trace_all_int1} apresentam os rastreamentos reais produzidos pelos simuladores em Python sobre o cenário principal \texttt{INT-01} e o caso-limite \texttt{ALL-L03}, evidenciando as operações de pilha e os limites invioláveis \texttt{<} e \texttt{>} da fita.
+
+\begin{table*}[t]
+\centering
+\caption{Rastreamento completo do AP sobre \texttt{INT-01} (\texttt{p\{(())\{\}\}\#isisiisis:isisiisis;}, 31 passos).}
+\label{tab:trace_ap}
+\scriptsize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}rllllX@{}}
+\toprule
+Passo & Estado & Pos & Pilha & Restante & Transição \\
+\midrule
+0 & \texttt{q0} & 0 & \texttt{Z} & \texttt{p\{(())\{\}\}\#isisiisis:isisiisis;} & \texttt{(inicial)} \\
+1 & \texttt{q1} & 1 & \texttt{Z} & \texttt{\{(())\{\}\}\#isisiisis:isisiisis;} & \texttt{$\delta$(q0, p, Z) = (q1, Z)} \\
+2 & \texttt{q2} & 2 & \texttt{\{Z} & \texttt{(())\{\}\}\#isisiisis:isisiisis;} & \texttt{$\delta$(q1, \{, Z) = (q2, \{Z)} \\
+3 & \texttt{q2} & 3 & \texttt{(\{Z} & \texttt{())\{\}\}\#isisiisis:isisiisis;} & \texttt{$\delta$(q2, (, \{) = (q2, (\{)} \\
+4 & \texttt{q2} & 4 & \texttt{((\{Z} & \texttt{))\{\}\}\#isisiisis:isisiisis;} & \texttt{$\delta$(q2, (, () = (q2, (()} \\
+5 & \texttt{q2} & 5 & \texttt{(\{Z} & \texttt{)\{\}\}\#isisiisis:isisiisis;} & \texttt{$\delta$(q2, ), () = (q2, $\varepsilon$)} \\
+6 & \texttt{q2} & 6 & \texttt{\{Z} & \texttt{\{\}\}\#isisiisis:isisiisis;} & \texttt{$\delta$(q2, ), () = (q2, $\varepsilon$)} \\
+7 & \texttt{q2} & 7 & \texttt{\{\{Z} & \texttt{\}\}\#isisiisis:isisiisis;} & \texttt{$\delta$(q2, \{, \{) = (q2, \{\{)} \\
+8 & \texttt{q2} & 8 & \texttt{\{Z} & \texttt{\}\#isisiisis:isisiisis;} & \texttt{$\delta$(q2, \}, \{) = (q2, $\varepsilon$)} \\
+9 & \texttt{q2} & 9 & \texttt{Z} & \texttt{\#isisiisis:isisiisis;} & \texttt{$\delta$(q2, \}, \{) = (q2, $\varepsilon$)} \\
+10 & \texttt{q3} & 9 & \texttt{Z} & \texttt{\#isisiisis:isisiisis;} & \texttt{$\delta$(q2, $\varepsilon$, Z) = (q3, Z)} \\
+11 & \texttt{q4} & 10 & \texttt{Z} & \texttt{isisiisis:isisiisis;} & \texttt{$\delta$(q3, \#, Z) = (q4, Z)} \\
+12 & \texttt{q5} & 11 & \texttt{Z} & \texttt{sisiisis:isisiisis;} & \texttt{$\delta$(q4, i, Z) = (q5, Z)} \\
+13 & \texttt{q5} & 12 & \texttt{Z} & \texttt{isiisis:isisiisis;} & \texttt{$\delta$(q5, s, Z) = (q5, Z)} \\
+14 & \texttt{q5} & 13 & \texttt{Z} & \texttt{siisis:isisiisis;} & \texttt{$\delta$(q5, i, Z) = (q5, Z)} \\
+15 & \texttt{q5} & 14 & \texttt{Z} & \texttt{iisis:isisiisis;} & \texttt{$\delta$(q5, s, Z) = (q5, Z)} \\
+16 & \texttt{q5} & 15 & \texttt{Z} & \texttt{isis:isisiisis;} & \texttt{$\delta$(q5, i, Z) = (q5, Z)} \\
+17 & \texttt{q5} & 16 & \texttt{Z} & \texttt{sis:isisiisis;} & \texttt{$\delta$(q5, i, Z) = (q5, Z)} \\
+18 & \texttt{q5} & 17 & \texttt{Z} & \texttt{is:isisiisis;} & \texttt{$\delta$(q5, s, Z) = (q5, Z)} \\
+19 & \texttt{q5} & 18 & \texttt{Z} & \texttt{s:isisiisis;} & \texttt{$\delta$(q5, i, Z) = (q5, Z)} \\
+20 & \texttt{q5} & 19 & \texttt{Z} & \texttt{:isisiisis;} & \texttt{$\delta$(q5, s, Z) = (q5, Z)} \\
+21 & \texttt{q6} & 20 & \texttt{Z} & \texttt{isisiisis;} & \texttt{$\delta$(q5, :, Z) = (q6, Z)} \\
+22 & \texttt{q7} & 21 & \texttt{Z} & \texttt{sisiisis;} & \texttt{$\delta$(q6, i, Z) = (q7, Z)} \\
+23 & \texttt{q7} & 22 & \texttt{Z} & \texttt{isiisis;} & \texttt{$\delta$(q7, s, Z) = (q7, Z)} \\
+24 & \texttt{q7} & 23 & \texttt{Z} & \texttt{siisis;} & \texttt{$\delta$(q7, i, Z) = (q7, Z)} \\
+25 & \texttt{q7} & 24 & \texttt{Z} & \texttt{iisis;} & \texttt{$\delta$(q7, s, Z) = (q7, Z)} \\
+26 & \texttt{q7} & 25 & \texttt{Z} & \texttt{isis;} & \texttt{$\delta$(q7, i, Z) = (q7, Z)} \\
+27 & \texttt{q7} & 26 & \texttt{Z} & \texttt{sis;} & \texttt{$\delta$(q7, i, Z) = (q7, Z)} \\
+28 & \texttt{q7} & 27 & \texttt{Z} & \texttt{is;} & \texttt{$\delta$(q7, s, Z) = (q7, Z)} \\
+29 & \texttt{q7} & 28 & \texttt{Z} & \texttt{s;} & \texttt{$\delta$(q7, i, Z) = (q7, Z)} \\
+30 & \texttt{q7} & 29 & \texttt{Z} & \texttt{;} & \texttt{$\delta$(q7, s, Z) = (q7, Z)} \\
+31 & \texttt{q8} & 30 & \texttt{Z} & \texttt{$\varepsilon$} & \texttt{$\delta$(q7, ;, Z) = (q8, Z)} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Rastreamento completo do ALL sobre o caso-limite \texttt{ALL-L03} (\texttt{i:i}, 9 passos).}
+\label{tab:trace_all_min}
+\scriptsize\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}rllllX@{}}
+\toprule
+Passo & Estado & Cabeçote & Lido & Fita (cabeçote em \texttt{[ ]}) & Transição \\
+\midrule
+0 & \texttt{q0} & 0 & \texttt{<} & \texttt{[<]i:i>} & \texttt{(inicial)} \\
+1 & \texttt{q1} & 1 & \texttt{i} & \texttt{<[i]:i>} & \texttt{$\delta$(q0, <) = (q1, <, R)} \\
+2 & \texttt{q2} & 2 & \texttt{:} & \texttt{<I[:]i>} & \texttt{$\delta$(q1, i) = (q2, I, R)} \\
+3 & \texttt{q4} & 3 & \texttt{i} & \texttt{<I:[i]>} & \texttt{$\delta$(q2, :) = (q4, :, R)} \\
+4 & \texttt{q6} & 2 & \texttt{:} & \texttt{<I[:]I>} & \texttt{$\delta$(q4, i) = (q6, I, L)} \\
+5 & \texttt{q7} & 1 & \texttt{I} & \texttt{<[I]:I>} & \texttt{$\delta$(q6, :) = (q7, :, L)} \\
+6 & \texttt{q8} & 2 & \texttt{:} & \texttt{<I[:]I>} & \texttt{$\delta$(q7, I) = (q8, I, R)} \\
+7 & \texttt{q9} & 3 & \texttt{I} & \texttt{<I:[I]>} & \texttt{$\delta$(q8, :) = (q9, :, R)} \\
+8 & \texttt{q9} & 4 & \texttt{>} & \texttt{<I:I[>]} & \texttt{$\delta$(q9, I) = (q9, I, R)} \\
+9 & \texttt{q10} & 3 & \texttt{I} & \texttt{<I:[I]>} & \texttt{$\delta$(q9, >) = (q10, >, L)} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Amostra do rastreamento do ALL sobre \texttt{INT-01} (fatia \texttt{isisiisis:isisiisis}, 21 células, 201 passos: 1º ciclo e varredura final).}
+\label{tab:trace_all_int1}
+\scriptsize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}rllllX@{}}
+\toprule
+Passo & Estado & Cab. & Lido & Fita (cabeçote em \texttt{[ ]}) & Transição \\
+\midrule
+0 & \texttt{q0} & 0 & \texttt{<} & \texttt{[<]isisiisis:isisiisis>} & \texttt{(inicial)} \\
+1 & \texttt{q1} & 1 & \texttt{i} & \texttt{<[i]sisiisis:isisiisis>} & \texttt{$\delta$(q0, <) = (q1, <, R)} \\
+2 & \texttt{q2} & 2 & \texttt{s} & \texttt{<I[s]isiisis:isisiisis>} & \texttt{$\delta$(q1, i) = (q2, I, R)} \\
+3 & \texttt{q2} & 3 & \texttt{i} & \texttt{<Is[i]siisis:isisiisis>} & \texttt{$\delta$(q2, s) = (q2, s, R)} \\
+4 & \texttt{q2} & 4 & \texttt{s} & \texttt{<Isi[s]iisis:isisiisis>} & \texttt{$\delta$(q2, i) = (q2, i, R)} \\
+5 & \texttt{q2} & 5 & \texttt{i} & \texttt{<Isis[i]isis:isisiisis>} & \texttt{$\delta$(q2, s) = (q2, s, R)} \\
+6 & \texttt{q2} & 6 & \texttt{i} & \texttt{<Isisi[i]sis:isisiisis>} & \texttt{$\delta$(q2, i) = (q2, i, R)} \\
+7 & \texttt{q2} & 7 & \texttt{s} & \texttt{<Isisii[s]is:isisiisis>} & \texttt{$\delta$(q2, i) = (q2, i, R)} \\
+8 & \texttt{q2} & 8 & \texttt{i} & \texttt{<Isisiis[i]s:isisiisis>} & \texttt{$\delta$(q2, s) = (q2, s, R)} \\
+9 & \texttt{q2} & 9 & \texttt{s} & \texttt{<Isisiisi[s]:isisiisis>} & \texttt{$\delta$(q2, i) = (q2, i, R)} \\
+10 & \texttt{q2} & 10 & \texttt{:} & \texttt{<Isisiisis[:]isisiisis>} & \texttt{$\delta$(q2, s) = (q2, s, R)} \\
+11 & \texttt{q4} & 11 & \texttt{i} & \texttt{<Isisiisis:[i]sisiisis>} & \texttt{$\delta$(q2, :) = (q4, :, R)} \\
+12 & \texttt{q6} & 10 & \texttt{:} & \texttt{<Isisiisis[:]Isisiisis>} & \texttt{$\delta$(q4, i) = (q6, I, L)} \\
+13 & \texttt{q7} & 9 & \texttt{s} & \texttt{<Isisiisi[s]:Isisiisis>} & \texttt{$\delta$(q6, :) = (q7, :, L)} \\
+14 & \texttt{q7} & 8 & \texttt{i} & \texttt{<Isisiis[i]s:Isisiisis>} & \texttt{$\delta$(q7, s) = (q7, s, L)} \\
+15 & \texttt{q7} & 7 & \texttt{s} & \texttt{<Isisii[s]is:Isisiisis>} & \texttt{$\delta$(q7, i) = (q7, i, L)} \\
+16 & \texttt{q7} & 6 & \texttt{i} & \texttt{<Isisi[i]sis:Isisiisis>} & \texttt{$\delta$(q7, s) = (q7, s, L)} \\
+17 & \texttt{q7} & 5 & \texttt{i} & \texttt{<Isis[i]isis:Isisiisis>} & \texttt{$\delta$(q7, i) = (q7, i, L)} \\
+18 & \texttt{q7} & 4 & \texttt{s} & \texttt{<Isi[s]iisis:Isisiisis>} & \texttt{$\delta$(q7, i) = (q7, i, L)} \\
+19 & \texttt{q7} & 3 & \texttt{i} & \texttt{<Is[i]siisis:Isisiisis>} & \texttt{$\delta$(q7, s) = (q7, s, L)} \\
+20 & \texttt{q7} & 2 & \texttt{s} & \texttt{<I[s]isiisis:Isisiisis>} & \texttt{$\delta$(q7, i) = (q7, i, L)} \\
+21 & \texttt{q7} & 1 & \texttt{I} & \texttt{<[I]sisiisis:Isisiisis>} & \texttt{$\delta$(q7, s) = (q7, s, L)} \\
+22 & \texttt{q8} & 2 & \texttt{s} & \texttt{<I[s]isiisis:Isisiisis>} & \texttt{$\delta$(q7, I) = (q8, I, R)} \\
+\multicolumn{6}{c}{\textit{... ciclos intermediários de casamento (passos 23 a 188) ...}} \\
+189 & \texttt{q7} & 9 & \texttt{S} & \texttt{<ISISIISI[S]:ISISIISIS>} & \texttt{$\delta$(q6, :) = (q7, :, L)} \\
+190 & \texttt{q8} & 10 & \texttt{:} & \texttt{<ISISIISIS[:]ISISIISIS>} & \texttt{$\delta$(q7, S) = (q8, S, R)} \\
+191 & \texttt{q9} & 11 & \texttt{I} & \texttt{<ISISIISIS:[I]SISIISIS>} & \texttt{$\delta$(q8, :) = (q9, :, R)} \\
+192 & \texttt{q9} & 12 & \texttt{S} & \texttt{<ISISIISIS:I[S]ISIISIS>} & \texttt{$\delta$(q9, I) = (q9, I, R)} \\
+193 & \texttt{q9} & 13 & \texttt{I} & \texttt{<ISISIISIS:IS[I]SIISIS>} & \texttt{$\delta$(q9, S) = (q9, S, R)} \\
+194 & \texttt{q9} & 14 & \texttt{S} & \texttt{<ISISIISIS:ISI[S]IISIS>} & \texttt{$\delta$(q9, I) = (q9, I, R)} \\
+195 & \texttt{q9} & 15 & \texttt{I} & \texttt{<ISISIISIS:ISIS[I]ISIS>} & \texttt{$\delta$(q9, S) = (q9, S, R)} \\
+196 & \texttt{q9} & 16 & \texttt{I} & \texttt{<ISISIISIS:ISISI[I]SIS>} & \texttt{$\delta$(q9, I) = (q9, I, R)} \\
+197 & \texttt{q9} & 17 & \texttt{S} & \texttt{<ISISIISIS:ISISII[S]IS>} & \texttt{$\delta$(q9, I) = (q9, I, R)} \\
+198 & \texttt{q9} & 18 & \texttt{I} & \texttt{<ISISIISIS:ISISIIS[I]S>} & \texttt{$\delta$(q9, S) = (q9, S, R)} \\
+199 & \texttt{q9} & 19 & \texttt{S} & \texttt{<ISISIISIS:ISISIISI[S]>} & \texttt{$\delta$(q9, I) = (q9, I, R)} \\
+200 & \texttt{q9} & 20 & \texttt{>} & \texttt{<ISISIISIS:ISISIISIS[>]} & \texttt{$\delta$(q9, S) = (q9, S, R)} \\
+201 & \texttt{q10} & 19 & \texttt{S} & \texttt{<ISISIISIS:ISISIISI[S]>} & \texttt{$\delta$(q9, >) = (q10, >, L)} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
